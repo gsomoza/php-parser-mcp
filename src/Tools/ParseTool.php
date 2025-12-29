@@ -8,17 +8,14 @@ use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
 use PhpParser\Error;
 use PhpParser\ParserFactory;
-use PhpParser\PrettyPrinter\Standard;
 
 class ParseTool
 {
     private ParserFactory $parserFactory;
-    private Standard $printer;
 
     public function __construct()
     {
         $this->parserFactory = new ParserFactory();
-        $this->printer = new Standard();
     }
 
     /**
@@ -83,10 +80,14 @@ class ParseTool
     }
 
     /**
-     * Convert a single node to string with indentation
+     * Convert a single node to string with indentation, including child nodes
      */
     private function nodeToString(object $node, int $depth): string
     {
+        if ($depth > 10) { // Prevent infinite recursion
+            return str_repeat('  ', $depth) . '...';
+        }
+
         $indent = str_repeat('  ', $depth);
         $className = get_class($node);
         $shortName = substr($className, strrpos($className, '\\') + 1);
@@ -94,12 +95,34 @@ class ParseTool
         $result = $indent . $shortName;
         
         // Add some useful properties for common node types
-        if (property_exists($node, 'name') && is_object($node->name)) {
-            if (method_exists($node->name, '__toString')) {
+        if (property_exists($node, 'name')) {
+            if (is_object($node->name) && method_exists($node->name, '__toString')) {
+                $result .= ' (' . $node->name . ')';
+            } elseif (is_string($node->name)) {
                 $result .= ' (' . $node->name . ')';
             }
-        } elseif (property_exists($node, 'name') && is_string($node->name)) {
-            $result .= ' (' . $node->name . ')';
+        }
+        
+        // Recursively process child nodes
+        $children = [];
+        foreach (get_object_vars($node) as $property => $value) {
+            if ($property === 'attributes') {
+                continue; // Skip internal attributes
+            }
+            
+            if (is_array($value)) {
+                foreach ($value as $child) {
+                    if (is_object($child) && str_starts_with(get_class($child), 'PhpParser\\Node\\')) {
+                        $children[] = $this->nodeToString($child, $depth + 1);
+                    }
+                }
+            } elseif (is_object($value) && str_starts_with(get_class($value), 'PhpParser\\Node\\')) {
+                $children[] = $this->nodeToString($value, $depth + 1);
+            }
+        }
+        
+        if (!empty($children)) {
+            $result .= "\n" . implode("\n", $children);
         }
         
         return $result;
