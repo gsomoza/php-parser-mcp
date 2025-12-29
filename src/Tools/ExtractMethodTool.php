@@ -582,7 +582,13 @@ class MethodExtractor extends NodeVisitorAbstract
             $replacementAdded = false;
 
             foreach ($node->stmts as $stmt) {
-                $stmtLine = $stmt->hasAttribute('startLine') ? $stmt->getAttribute('startLine') : 0;
+                // Skip statements without line information - they should not be in our range
+                if (!$stmt->hasAttribute('startLine')) {
+                    $newStmts[] = $stmt;
+                    continue;
+                }
+
+                $stmtLine = $stmt->getAttribute('startLine');
 
                 // Before the range: keep statement
                 if ($stmtLine < $this->startLine) {
