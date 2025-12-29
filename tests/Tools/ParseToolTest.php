@@ -24,9 +24,11 @@ class ParseToolTest extends TestCase
         // Clean up temp files
         if (is_dir($this->tempDir)) {
             $files = glob($this->tempDir . '/*');
-            foreach ($files as $file) {
-                if (is_file($file)) {
-                    unlink($file);
+            if ($files !== false) {
+                foreach ($files as $file) {
+                    if (is_file($file)) {
+                        unlink($file);
+                    }
                 }
             }
             rmdir($this->tempDir);
