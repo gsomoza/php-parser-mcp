@@ -13,26 +13,18 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
+use Somoza\PhpParserMcp\Helpers\RefactoringHelpers;
 
 class RenameVariableTool
 {
-    private ParserFactory $parserFactory;
-    private Standard $printer;
-
-    public function __construct()
-    {
-        $this->parserFactory = new ParserFactory();
-        $this->printer = new Standard();
-    }
-
     /**
      * Rename a variable throughout its scope
      *
      * @param string $file Path to the PHP file
-     * @param int $line Line number where variable is used
+     * @param string $selectionRange Range in format 'line:column' or 'line'
      * @param string $oldName Current variable name (with or without $ prefix)
      * @param string $newName New variable name (with or without $ prefix)
-     * @return array{success: bool, code?: string, file?: string, error?: string}
+     * @return array{success: bool, code?: string, file?: string, message?: string, error?: string}
      */
     #[McpTool(
         name: 'rename_variable',
@@ -45,10 +37,10 @@ class RenameVariableTool
         )]
         string $file,
         #[Schema(
-            type: 'integer',
-            description: 'Line number where variable is used'
+            type: 'string',
+            description: "Range in format 'line:column' or 'line' where variable is used"
         )]
-        int $line,
+        string $selectionRange,
         #[Schema(
             type: 'string',
             description: 'Current variable name (with or without $ prefix)'
@@ -60,88 +52,63 @@ class RenameVariableTool
         )]
         string $newName
     ): array {
-        try {
-            // Check if file exists
-            if (!file_exists($file)) {
-                return [
-                    'success' => false,
-                    'error' => "File not found: {$file}"
-                ];
-            }
-
-            // Check if file is readable
-            if (!is_readable($file)) {
-                return [
-                    'success' => false,
-                    'error' => "File is not readable: {$file}"
-                ];
-            }
-
-            // Read file contents
-            $code = file_get_contents($file);
-            if ($code === false) {
-                return [
-                    'success' => false,
-                    'error' => "Failed to read file: {$file}"
-                ];
-            }
-
-            // Normalize variable names (remove $ prefix if present)
-            $oldName = ltrim($oldName, '$');
-            $newName = ltrim($newName, '$');
-
-            if (empty($oldName) || empty($newName)) {
-                return [
-                    'success' => false,
-                    'error' => 'Variable names cannot be empty'
-                ];
-            }
-
-            // Parse the code
-            $parser = $this->parserFactory->createForNewestSupportedVersion();
-            $ast = $parser->parse($code);
-
-            if ($ast === null) {
-                return [
-                    'success' => false,
-                    'error' => 'Failed to parse code: parser returned null'
-                ];
-            }
-
-            // Find the scope containing the variable at the specified line
-            $scopeFinder = new ScopeFinder($line, $ast);
-            $traverser = new NodeTraverser();
-            $traverser->addVisitor($scopeFinder);
-            $traverser->traverse($ast);
-
-            $scope = $scopeFinder->getScope();
-            $isGlobalScope = $scopeFinder->isGlobalScope();
-
-            // Rename the variable within the scope
-            $renamer = new VariableRenamer($oldName, $newName, $scope, $isGlobalScope);
-            $traverser = new NodeTraverser();
-            $traverser->addVisitor($renamer);
-            $ast = $traverser->traverse($ast);
-
-            // Generate the modified code
-            $modifiedCode = $this->printer->prettyPrintFile($ast);
-
-            return [
-                'success' => true,
-                'code' => $modifiedCode,
-                'file' => $file
-            ];
-        } catch (Error $e) {
+        // Parse the selection range
+        if (!RefactoringHelpers::tryParseRange($selectionRange, $line, $column, $endLine, $endColumn)) {
             return [
                 'success' => false,
-                'error' => 'Parse error: ' . $e->getMessage()
-            ];
-        } catch (\Throwable $e) {
-            return [
-                'success' => false,
-                'error' => 'Unexpected error: ' . $e->getMessage()
+                'error' => "Invalid selection range format. Use 'line:column' or 'line'"
             ];
         }
+
+        // Normalize variable names (remove $ prefix if present)
+        $oldName = ltrim($oldName, '$');
+        $newName = ltrim($newName, '$');
+
+        if (empty($oldName) || empty($newName)) {
+            return [
+                'success' => false,
+                'error' => 'Variable names cannot be empty'
+            ];
+        }
+
+        return RefactoringHelpers::applyFileEdit(
+            $file,
+            fn($code) => $this->renameVariableInSource($code, $line, $oldName, $newName),
+            "Successfully renamed variable '\${$oldName}' to '\${$newName}' at {$selectionRange} in {$file}"
+        );
+    }
+
+    /**
+     * Rename variable in source code
+     *
+     * @param string $code Source code
+     * @param int $line Line number
+     * @param string $oldName Old variable name
+     * @param string $newName New variable name
+     * @return string Refactored source code
+     */
+    private function renameVariableInSource(string $code, int $line, string $oldName, string $newName): string
+    {
+        // Parse the code
+        $ast = RefactoringHelpers::parseCode($code);
+
+        // Find the scope containing the variable at the specified line
+        $scopeFinder = new ScopeFinder($line, $ast);
+        $traverser = new NodeTraverser();
+        $traverser->addVisitor($scopeFinder);
+        $traverser->traverse($ast);
+
+        $scope = $scopeFinder->getScope();
+        $isGlobalScope = $scopeFinder->isGlobalScope();
+
+        // Rename the variable within the scope
+        $renamer = new VariableRenamer($oldName, $newName, $scope, $isGlobalScope);
+        $traverser = new NodeTraverser();
+        $traverser->addVisitor($renamer);
+        $ast = $traverser->traverse($ast);
+
+        // Generate the modified code
+        return RefactoringHelpers::printCode($ast);
     }
 }
 

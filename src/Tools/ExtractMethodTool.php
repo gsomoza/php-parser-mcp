@@ -19,26 +19,17 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
+use Somoza\PhpParserMcp\Helpers\RefactoringHelpers;
 
 class ExtractMethodTool
 {
-    private ParserFactory $parserFactory;
-    private Standard $printer;
-
-    public function __construct()
-    {
-        $this->parserFactory = new ParserFactory();
-        $this->printer = new Standard();
-    }
-
     /**
      * Extract a block of code into a separate method
      *
      * @param string $file Path to the PHP file
-     * @param int $startLine Starting line number
-     * @param int $endLine Ending line number
+     * @param string $selectionRange Range in format 'startLine:startColumn-endLine:endColumn' or 'startLine-endLine'
      * @param string $methodName Name for the new method
-     * @return array{success: bool, code?: string, file?: string, error?: string}
+     * @return array{success: bool, code?: string, file?: string, message?: string, error?: string}
      */
     #[McpTool(
         name: 'extract_method',
@@ -51,136 +42,100 @@ class ExtractMethodTool
         )]
         string $file,
         #[Schema(
-            type: 'integer',
-            description: 'Starting line number'
+            type: 'string',
+            description: "Range in format 'startLine:startColumn-endLine:endColumn' or 'startLine-endLine'"
         )]
-        int $startLine,
-        #[Schema(
-            type: 'integer',
-            description: 'Ending line number'
-        )]
-        int $endLine,
+        string $selectionRange,
         #[Schema(
             type: 'string',
             description: 'Name for the new method'
         )]
         string $methodName
     ): array {
-        try {
-            // Check if file exists
-            if (!file_exists($file)) {
-                return [
-                    'success' => false,
-                    'error' => "File not found: {$file}"
-                ];
-            }
-
-            // Check if file is readable
-            if (!is_readable($file)) {
-                return [
-                    'success' => false,
-                    'error' => "File is not readable: {$file}"
-                ];
-            }
-
-            // Read file contents
-            $code = file_get_contents($file);
-            if ($code === false) {
-                return [
-                    'success' => false,
-                    'error' => "Failed to read file: {$file}"
-                ];
-            }
-
-            // Validate inputs
-            if (empty($methodName)) {
-                return [
-                    'success' => false,
-                    'error' => 'Method name cannot be empty'
-                ];
-            }
-
-            if ($startLine > $endLine) {
-                return [
-                    'success' => false,
-                    'error' => "Start line ({$startLine}) must be less than or equal to end line ({$endLine})"
-                ];
-            }
-
-            // Parse the code
-            $parser = $this->parserFactory->createForNewestSupportedVersion();
-            $ast = $parser->parse($code);
-
-            if ($ast === null) {
-                return [
-                    'success' => false,
-                    'error' => 'Failed to parse code: parser returned null'
-                ];
-            }
-
-            // Find the statements to extract and their context
-            $statementFinder = new StatementRangeFinder($startLine, $endLine);
-            $traverser = new NodeTraverser();
-            $traverser->addVisitor($statementFinder);
-            $traverser->traverse($ast);
-
-            $statementsToExtract = $statementFinder->getStatements();
-            $parentMethod = $statementFinder->getParentMethod();
-            $parentClass = $statementFinder->getParentClass();
-
-            if (empty($statementsToExtract)) {
-                return [
-                    'success' => false,
-                    'error' => "Could not find statements between lines {$startLine} and {$endLine}"
-                ];
-            }
-
-            if ($parentClass === null) {
-                return [
-                    'success' => false,
-                    'error' => "Can only extract methods within a class"
-                ];
-            }
-
-            // Analyze variables
-            $analyzer = new VariableAnalyzer($statementsToExtract, $parentMethod, $startLine, $endLine);
-            $params = $analyzer->getParameters();
-            $returnVars = $analyzer->getReturnVariables();
-
-            // Create the new method
-            $extractor = new MethodExtractor(
-                $statementsToExtract,
-                $parentMethod,
-                $parentClass,
-                $methodName,
-                $params,
-                $returnVars,
-                $startLine,
-                $endLine
-            );
-            $traverser = new NodeTraverser();
-            $traverser->addVisitor($extractor);
-            $ast = $traverser->traverse($ast);
-
-            // Generate the modified code
-            $modifiedCode = $this->printer->prettyPrintFile($ast);
-
-            return [
-                'success' => true,
-                'code' => $modifiedCode,
-                'file' => $file
-            ];
-        } catch (Error $e) {
+        // Parse the selection range
+        if (!RefactoringHelpers::tryParseRange($selectionRange, $startLine, $startColumn, $endLine, $endColumn)) {
             return [
                 'success' => false,
-                'error' => 'Parse error: ' . $e->getMessage()
-            ];
-        } catch (\Throwable $e) {
-            return [
-                'success' => false,
-                'error' => 'Unexpected error: ' . $e->getMessage()
+                'error' => "Invalid selection range format. Use 'startLine:startColumn-endLine:endColumn' or 'startLine-endLine'"
             ];
         }
+
+        // Validate method name
+        if (empty($methodName)) {
+            return [
+                'success' => false,
+                'error' => 'Method name cannot be empty'
+            ];
+        }
+
+        if ($startLine > $endLine) {
+            return [
+                'success' => false,
+                'error' => "Start line ({$startLine}) must be less than or equal to end line ({$endLine})"
+            ];
+        }
+
+        return RefactoringHelpers::applyFileEdit(
+            $file,
+            fn($code) => $this->extractMethodInSource($code, $startLine, $endLine, $methodName),
+            "Successfully extracted method '{$methodName}' from {$selectionRange} in {$file}"
+        );
+    }
+
+    /**
+     * Extract method from source code
+     *
+     * @param string $code Source code
+     * @param int $startLine Starting line number
+     * @param int $endLine Ending line number
+     * @param string $methodName Name for the new method
+     * @return string Refactored source code
+     */
+    private function extractMethodInSource(string $code, int $startLine, int $endLine, string $methodName): string
+    {
+        // Parse the code
+        $ast = RefactoringHelpers::parseCode($code);
+
+        // Find the statements to extract and their context
+        $statementFinder = new StatementRangeFinder($startLine, $endLine);
+        $traverser = new NodeTraverser();
+        $traverser->addVisitor($statementFinder);
+        $traverser->traverse($ast);
+
+        $statementsToExtract = $statementFinder->getStatements();
+        $parentMethod = $statementFinder->getParentMethod();
+        $parentClass = $statementFinder->getParentClass();
+
+        if (empty($statementsToExtract)) {
+            throw new \RuntimeException("Could not find statements between lines {$startLine} and {$endLine}");
+        }
+
+        if ($parentClass === null) {
+            throw new \RuntimeException("Can only extract methods within a class");
+        }
+
+        // Analyze variables
+        $analyzer = new VariableAnalyzer($statementsToExtract, $parentMethod, $startLine, $endLine);
+        $params = $analyzer->getParameters();
+        $returnVars = $analyzer->getReturnVariables();
+
+        // Create the new method
+        $extractor = new MethodExtractor(
+            $statementsToExtract,
+            $parentMethod,
+            $parentClass,
+            $methodName,
+            $params,
+            $returnVars,
+            $startLine,
+            $endLine
+        );
+        $traverser = new NodeTraverser();
+        $traverser->addVisitor($extractor);
+        $ast = $traverser->traverse($ast);
+
+        // Generate the modified code
+        return RefactoringHelpers::printCode($ast);
     }
 }
 

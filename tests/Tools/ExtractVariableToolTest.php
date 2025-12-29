@@ -50,7 +50,7 @@ class ExtractVariableToolTest extends TestCase
 $result = 1 + 2;
 ';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 2, 11, '$sum');
+        $result = $this->tool->extract($file, '2:11', '$sum');
 
         $this->assertTrue($result['success']);
         $this->assertArrayHasKey('code', $result);
@@ -64,7 +64,7 @@ $result = 1 + 2;
 $result = 5 * 10;
 ';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 2, 11, 'product');
+        $result = $this->tool->extract($file, '2:11', 'product');
 
         $this->assertTrue($result['success']);
         $this->assertStringContainsString('$product = 5 * 10', $result['code']);
@@ -78,7 +78,7 @@ function calculate() {
     return 10 + 20;
 }';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 3, 12, '$sum');
+        $result = $this->tool->extract($file, '3:12', '$sum');
 
         $this->assertTrue($result['success']);
         $this->assertStringContainsString('$sum = 10 + 20', $result['code']);
@@ -95,7 +95,7 @@ class MyClass {
     }
 }';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 4, 14, '$product');
+        $result = $this->tool->extract($file, '4:14', '$product');
 
         $this->assertTrue($result['success']);
         $this->assertStringContainsString('$product = 5 * 3', $result['code']);
@@ -108,7 +108,7 @@ class MyClass {
 $total = ($a + $b) * ($c - $d);
 ';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 2, 10, '$intermediate');
+        $result = $this->tool->extract($file, '2:10', '$intermediate');
 
         $this->assertTrue($result['success']);
         $this->assertArrayHasKey('code', $result);
@@ -123,7 +123,7 @@ $total = ($a + $b) * ($c - $d);
 $result = $obj->method();
 ';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 2, 11, '$value');
+        $result = $this->tool->extract($file, '2:11', '$value');
 
         $this->assertTrue($result['success']);
         $this->assertStringContainsString('$value = $obj->method()', $result['code']);
@@ -136,7 +136,7 @@ $result = $obj->method();
 $value = $array[0];
 ';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 2, 10, '$element');
+        $result = $this->tool->extract($file, '2:10', '$element');
 
         $this->assertTrue($result['success']);
         $this->assertStringContainsString('$element = $array[0]', $result['code']);
@@ -145,7 +145,7 @@ $value = $array[0];
 
     public function testExtractFileNotFound(): void
     {
-        $result = $this->tool->extract('/nonexistent/file.php', 1, 1, '$var');
+        $result = $this->tool->extract('/nonexistent/file.php', '1:1', '$var');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -156,7 +156,7 @@ $value = $array[0];
     {
         $code = '<?php $x = 1 + 2;';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 1, 12, '');
+        $result = $this->tool->extract($file, '1:12', '');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -166,7 +166,7 @@ $value = $array[0];
     public function testExtractSyntaxError(): void
     {
         $file = $this->createTempFile('<?php $x = ;');
-        $result = $this->tool->extract($file, 1, 12, '$var');
+        $result = $this->tool->extract($file, '1:12', '$var');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -183,7 +183,7 @@ $value = $array[0];
         $file = $this->createTempFile('<?php $x = 1 + 2;');
         chmod($file, 0000);
 
-        $result = $this->tool->extract($file, 1, 12, '$var');
+        $result = $this->tool->extract($file, '1:12', '$var');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -199,7 +199,7 @@ $value = $array[0];
 $x = 1 + 2;
 ';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 999, 1, '$var');
+        $result = $this->tool->extract($file, '999:1', '$var');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);

@@ -56,7 +56,7 @@ class Calculator {
     }
 }';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 6, 6, 'calculateSum');
+        $result = $this->tool->extract($file, '6-6', 'calculateSum');
 
         $this->assertTrue($result['success']);
         $this->assertArrayHasKey('code', $result);
@@ -76,7 +76,7 @@ class Calculator {
     }
 }';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 6, 6, 'add');
+        $result = $this->tool->extract($file, '6-6', 'add');
 
         $this->assertTrue($result['success']);
         $this->assertStringContainsString('private function add', $result['code']);
@@ -96,7 +96,7 @@ class Calculator {
     }
 }';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 5, 5, 'double');
+        $result = $this->tool->extract($file, '5-5', 'double');
 
         $this->assertTrue($result['success']);
         $this->assertStringContainsString('private function double', $result['code']);
@@ -117,7 +117,7 @@ class Calculator {
     }
 }';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 6, 7, 'calculateSum');
+        $result = $this->tool->extract($file, '6-7', 'calculateSum');
 
         $this->assertTrue($result['success']);
         $this->assertStringContainsString('private function calculateSum', $result['code']);
@@ -126,7 +126,7 @@ class Calculator {
 
     public function testExtractMethodFileNotFound(): void
     {
-        $result = $this->tool->extract('/nonexistent/file.php', 1, 2, 'method');
+        $result = $this->tool->extract('/nonexistent/file.php', '1-2', 'method');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -142,7 +142,7 @@ class Test {
     }
 }';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 4, 4, '');
+        $result = $this->tool->extract($file, '4-4', '');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -158,7 +158,7 @@ class Test {
     }
 }';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 5, 3, 'method');
+        $result = $this->tool->extract($file, '5-3', 'method');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -168,7 +168,7 @@ class Test {
     public function testExtractMethodSyntaxError(): void
     {
         $file = $this->createTempFile('<?php class Test { public function test() { $x = ; } }');
-        $result = $this->tool->extract($file, 1, 1, 'method');
+        $result = $this->tool->extract($file, '1-1', 'method');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -184,7 +184,7 @@ function globalFunction() {
     return $x + $y;
 }';
         $file = $this->createTempFile($code);
-        $result = $this->tool->extract($file, 3, 4, 'add');
+        $result = $this->tool->extract($file, '3-4', 'add');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -201,7 +201,7 @@ function globalFunction() {
         $file = $this->createTempFile('<?php class Test { function test() { $x = 1; } }');
         chmod($file, 0000);
 
-        $result = $this->tool->extract($file, 1, 1, 'method');
+        $result = $this->tool->extract($file, '1-1', 'method');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);

@@ -53,7 +53,7 @@ function test() {
     return $result;
 }';
         $file = $this->createTempFile($code);
-        $result = $this->tool->rename($file, 3, '$oldVar', '$newVar');
+        $result = $this->tool->rename($file, '3', '$oldVar', '$newVar');
 
         $this->assertTrue($result['success']);
         $this->assertArrayHasKey('code', $result);
@@ -70,7 +70,7 @@ function test() {
     return $oldVar;
 }';
         $file = $this->createTempFile($code);
-        $result = $this->tool->rename($file, 3, 'oldVar', 'newVar');
+        $result = $this->tool->rename($file, '3', 'oldVar', 'newVar');
 
         $this->assertTrue($result['success']);
         $this->assertStringContainsString('$newVar = 1', $result['code']);
@@ -88,7 +88,7 @@ class MyClass {
     }
 }';
         $file = $this->createTempFile($code);
-        $result = $this->tool->rename($file, 4, '$temp', '$value');
+        $result = $this->tool->rename($file, '4', '$temp', '$value');
 
         $this->assertTrue($result['success']);
         $this->assertStringContainsString('$value = 5', $result['code']);
@@ -104,7 +104,7 @@ $closure = function() {
     return $x * 2;
 };';
         $file = $this->createTempFile($code);
-        $result = $this->tool->rename($file, 3, '$x', '$num');
+        $result = $this->tool->rename($file, '3', '$x', '$num');
 
         $this->assertTrue($result['success']);
         $this->assertStringContainsString('$num = 10', $result['code']);
@@ -125,7 +125,7 @@ function bar() {
 }';
         $file = $this->createTempFile($code);
         // Rename in first function only
-        $result = $this->tool->rename($file, 3, '$var', '$value');
+        $result = $this->tool->rename($file, '3', '$var', '$value');
 
         $this->assertTrue($result['success']);
         // First function should have $value
@@ -146,7 +146,7 @@ function calculate() {
     return $sum;
 }';
         $file = $this->createTempFile($code);
-        $result = $this->tool->rename($file, 3, '$sum', '$total');
+        $result = $this->tool->rename($file, '3', '$sum', '$total');
 
         $this->assertTrue($result['success']);
         $this->assertStringNotContainsString('$sum', $result['code']);
@@ -162,7 +162,7 @@ $globalVar = 100;
 echo $globalVar;
 ';
         $file = $this->createTempFile($code);
-        $result = $this->tool->rename($file, 2, '$globalVar', '$config');
+        $result = $this->tool->rename($file, '2', '$globalVar', '$config');
 
         $this->assertTrue($result['success']);
         $this->assertStringContainsString('$config = 100', $result['code']);
@@ -171,7 +171,7 @@ echo $globalVar;
 
     public function testRenameVariableFileNotFound(): void
     {
-        $result = $this->tool->rename('/nonexistent/file.php', 1, '$old', '$new');
+        $result = $this->tool->rename('/nonexistent/file.php', '1', '$old', '$new');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -182,7 +182,7 @@ echo $globalVar;
     {
         $code = '<?php $x = 1;';
         $file = $this->createTempFile($code);
-        $result = $this->tool->rename($file, 1, '', '$new');
+        $result = $this->tool->rename($file, '1', '', '$new');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -193,7 +193,7 @@ echo $globalVar;
     {
         $code = '<?php $x = 1;';
         $file = $this->createTempFile($code);
-        $result = $this->tool->rename($file, 1, '$old', '');
+        $result = $this->tool->rename($file, '1', '$old', '');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -203,7 +203,7 @@ echo $globalVar;
     public function testRenameVariableSyntaxError(): void
     {
         $file = $this->createTempFile('<?php $x = ;');
-        $result = $this->tool->rename($file, 1, '$x', '$y');
+        $result = $this->tool->rename($file, '1', '$x', '$y');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
@@ -220,7 +220,7 @@ echo $globalVar;
         $file = $this->createTempFile('<?php $x = 1;');
         chmod($file, 0000);
 
-        $result = $this->tool->rename($file, 1, '$x', '$y');
+        $result = $this->tool->rename($file, '1', '$x', '$y');
 
         $this->assertFalse($result['success']);
         $this->assertArrayHasKey('error', $result);
