@@ -84,7 +84,9 @@ echo "Error: " . ($result5['error'] ?? 'N/A') . "\n\n";
 
 // Clean up
 foreach (glob($tempDir . '/*.php') ?: [] as $file) {
-    unlink($file);
+    if (is_file($file)) {
+        unlink($file);
+    }
 }
 rmdir($tempDir);
 
