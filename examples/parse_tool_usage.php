@@ -83,7 +83,7 @@ echo "Success: " . ($result5['success'] ? 'Yes' : 'No') . "\n";
 echo "Error: " . ($result5['error'] ?? 'N/A') . "\n\n";
 
 // Clean up
-foreach (glob($tempDir . '/*.php') as $file) {
+foreach (glob($tempDir . '/*.php') ?: [] as $file) {
     unlink($file);
 }
 rmdir($tempDir);
