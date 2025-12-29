@@ -18,7 +18,7 @@ This is a Model Context Protocol (MCP) server that provides PHP refactoring tool
 ## Code Organization
 - Place all source code in `src/` directory
 - Place all tests in `tests/` directory
-- Namespace: `GSomoza\PhpParserMcp`
+- Namespace: `Somoza\PhpParserMcp`
 - Tools should be in `src/Tools/` directory
 
 ## Testing

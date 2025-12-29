@@ -19,7 +19,7 @@ You can also start the server programmatically:
 
 require __DIR__ . '/vendor/autoload.php';
 
-use GSomoza\PhpParserMcp\Server;
+use Somoza\PhpParserMcp\Server;
 
 // Start the MCP server with stdio transport
 Server::run();

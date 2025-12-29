@@ -19,12 +19,12 @@
     },
     "autoload": {
         "psr-4": {
-            "GSomoza\\PhpParserMcp\\": "src/"
+            "Somoza\\PhpParserMcp\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "GSomoza\\PhpParserMcp\\Tests\\": "tests/"
+            "Somoza\\PhpParserMcp\\Tests\\": "tests/"
         }
     },
     "bin": [

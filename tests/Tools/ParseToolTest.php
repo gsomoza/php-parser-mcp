@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace GSomoza\PhpParserMcp\Tests\Tools;
+namespace Somoza\PhpParserMcp\Tests\Tools;
 
-use GSomoza\PhpParserMcp\Tools\ParseTool;
+use Somoza\PhpParserMcp\Tools\ParseTool;
 use PHPUnit\Framework\TestCase;
 
 class ParseToolTest extends TestCase

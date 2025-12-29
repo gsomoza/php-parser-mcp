@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace GSomoza\PhpParserMcp;
+namespace Somoza\PhpParserMcp;
 
 use PhpMcp\Server\Server as McpServer;
 use PhpMcp\Server\Transports\StdioServerTransport;

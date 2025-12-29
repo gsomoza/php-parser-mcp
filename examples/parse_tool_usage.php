@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use GSomoza\PhpParserMcp\Tools\ParseTool;
+use Somoza\PhpParserMcp\Tools\ParseTool;
 
 // Create an instance of the ParseTool
 $tool = new ParseTool();
