@@ -15,8 +15,10 @@ use PhpParser\NodeVisitorAbstract;
 class ExpressionSelector extends NodeVisitorAbstract
 {
     private int $startLine;
+    /** @phpstan-ignore-next-line property.unusedWritten */
     private int $startColumn;
     private int $endLine;
+    /** @phpstan-ignore-next-line property.unusedWritten */
     private int $endColumn;
     private ?Node $parentStatement = null;
     /** @var array<Node\Stmt> */
