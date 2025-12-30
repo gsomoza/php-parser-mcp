@@ -1,0 +1,52 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, xml, ctype, json
+          coverage: none
+          tools: composer:v2, cs2pr
+      
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+      
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+      
+      - name: Run PHPUnit tests
+        run: composer test
+      
+      - name: Run PHPCS
+        run: composer phpcs -- --report=checkstyle | cs2pr
+        continue-on-error: true
+      
+      - name: Run PHPStan
+        run: composer phpstan -- --error-format=github
+        continue-on-error: true

@@ -40,8 +40,11 @@
         </properties>
     </rule>
 
-    <!-- Enforce uppercase PHP constants -->
-    <rule ref="Generic.PHP.UpperCaseConstant"/>
+    <!-- Enforce uppercase PHP constants (but allow lowercase true/false/null per PSR-12) -->
+    <rule ref="Generic.PHP.UpperCaseConstant">
+        <exclude name="Generic.PHP.UpperCaseConstant.Found"/>
+    </rule>
+    <rule ref="Generic.PHP.LowerCaseConstant"/>
 
     <!-- Line length warnings at 120 characters, errors at 150 -->
     <rule ref="Generic.Files.LineLength">
