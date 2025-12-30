@@ -4,7 +4,16 @@ composer.lock
 
 # PHPUnit
 .phpunit.result.cache
+.phpunit.cache/
 /coverage/
+
+# PHP-CS-Fixer
+.php-cs-fixer.cache
+
+# Infection
+infection.log
+infection.html
+infection-summary.log
 
 # IDE
 .idea/
