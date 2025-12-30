@@ -8,7 +8,7 @@ use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 
 /**
- * NodeVisitor to find the scope containing a specific line
+ * NodeVisitor to find the scope containing a specific line.
  */
 class ScopeFinder extends NodeVisitorAbstract
 {
@@ -19,6 +19,7 @@ class ScopeFinder extends NodeVisitorAbstract
 
     /**
      * @param array<\PhpParser\Node> $ast Not currently used, kept for potential future use
+     *
      * @phpstan-ignore-next-line constructor.unusedParam
      */
     public function __construct(int $targetLine, array $ast)

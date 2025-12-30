@@ -14,12 +14,13 @@ use Somoza\PhpParserMcp\Tools\Internal\RenameVariable\VariableRenamer;
 class RenameVariableTool
 {
     /**
-     * Rename a variable throughout its scope
+     * Rename a variable throughout its scope.
      *
      * @param string $file Path to the PHP file
      * @param string $selectionRange Range in format 'line:column' or 'line'
      * @param string $oldName Current variable name (with or without $ prefix)
      * @param string $newName New variable name (with or without $ prefix)
+     *
      * @return array{success: bool, code?: string, file?: string, message?: string, error?: string}
      */
     #[McpTool(
@@ -52,7 +53,7 @@ class RenameVariableTool
         if (!RefactoringHelpers::tryParseRange($selectionRange, $line, $column, $endLine, $endColumn)) {
             return [
                 'success' => false,
-                'error' => "Invalid selection range format. Use 'line:column' or 'line'"
+                'error' => "Invalid selection range format. Use 'line:column' or 'line'",
             ];
         }
 
@@ -64,14 +65,14 @@ class RenameVariableTool
         if (empty($oldName) || !preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $oldName)) {
             return [
                 'success' => false,
-                'error' => 'Old variable name cannot be empty or invalid'
+                'error' => 'Old variable name cannot be empty or invalid',
             ];
         }
 
         if (empty($newName) || !preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $newName)) {
             return [
                 'success' => false,
-                'error' => 'New variable name cannot be empty or invalid'
+                'error' => 'New variable name cannot be empty or invalid',
             ];
         }
 
@@ -83,12 +84,13 @@ class RenameVariableTool
     }
 
     /**
-     * Rename variable in source code
+     * Rename variable in source code.
      *
      * @param string $code Source code
      * @param int $line Line number where the variable is used
      * @param string $oldName Current variable name (without $ prefix)
      * @param string $newName New variable name (without $ prefix)
+     *
      * @return string Refactored source code
      */
     private function renameVariableInSource(string $code, int $line, string $oldName, string $newName): string

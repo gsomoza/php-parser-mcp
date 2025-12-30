@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Somoza\PhpParserMcp\Tests\Tools;
 
-use Somoza\PhpParserMcp\Tools\ExtractMethodTool;
 use PHPUnit\Framework\TestCase;
+use Somoza\PhpParserMcp\Tools\ExtractMethodTool;
 
 class ExtractMethodToolTest extends TestCase
 {
@@ -199,7 +199,7 @@ function globalFunction() {
         }
 
         $file = $this->createTempFile('<?php class Test { function test() { $x = 1; } }');
-        chmod($file, 0000);
+        chmod($file, 0o000);
 
         $result = $this->tool->extract($file, '1-1', 'method');
 
@@ -208,6 +208,6 @@ function globalFunction() {
         $this->assertStringContainsString('not readable', $result['error']);
 
         // Clean up
-        chmod($file, 0644);
+        chmod($file, 0o644);
     }
 }

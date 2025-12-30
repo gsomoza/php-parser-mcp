@@ -93,22 +93,36 @@ Or with PHPUnit directly:
 vendor/bin/phpunit
 ```
 
+Run tests with code coverage:
+
+```bash
+composer test:coverage
+```
+
 ### Code Quality
 
 This project uses several code quality tools:
 
-#### PHP_CodeSniffer (PHPCS)
+#### PHP Parallel Lint
 
-Check code style compliance with PSR-12:
+Check PHP files for syntax errors:
 
 ```bash
-composer phpcs
+composer lint
+```
+
+#### PHP-CS-Fixer
+
+Check code style compliance with PER-CS2.0:
+
+```bash
+composer cs-check
 ```
 
 Automatically fix code style issues:
 
 ```bash
-composer phpcbf
+composer cs-fix
 ```
 
 #### PHPStan
@@ -119,9 +133,27 @@ Run static analysis (level 8):
 composer phpstan
 ```
 
+#### Mutation Testing
+
+Run mutation testing with Infection:
+
+```bash
+composer infection
+```
+
+#### Run All Checks
+
+Run all quality assurance checks at once:
+
+```bash
+composer qa
+```
+
 Configuration files:
-- `phpcs.xml` - PHPCS configuration
+- `.php-cs-fixer.dist.php` - PHP-CS-Fixer configuration
 - `phpstan.neon` - PHPStan configuration
+- `phpunit.xml.dist` - PHPUnit configuration
+- `infection.json5` - Infection configuration
 
 ## Development
 

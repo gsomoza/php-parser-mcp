@@ -11,7 +11,7 @@ use PhpParser\Node\Stmt\Expression;
 use PhpParser\NodeVisitorAbstract;
 
 /**
- * NodeVisitor to extract an expression into a variable
+ * NodeVisitor to extract an expression into a variable.
  */
 class ExpressionExtractor extends NodeVisitorAbstract
 {
@@ -52,7 +52,7 @@ class ExpressionExtractor extends NodeVisitorAbstract
             // Return an array to insert the assignment before the current statement
             return [
                 $assignment,
-                $node
+                $node,
             ];
         }
 

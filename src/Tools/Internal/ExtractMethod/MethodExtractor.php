@@ -15,7 +15,7 @@ use PhpParser\Node\Stmt\Return_;
 use PhpParser\NodeVisitorAbstract;
 
 /**
- * NodeVisitor to extract statements into a new method
+ * NodeVisitor to extract statements into a new method.
  */
 class MethodExtractor extends NodeVisitorAbstract
 {
@@ -90,7 +90,7 @@ class MethodExtractor extends NodeVisitorAbstract
             $newMethod = new ClassMethod($this->methodName, [
                 'flags' => Node\Stmt\Class_::MODIFIER_PRIVATE,
                 'params' => $this->params,
-                'stmts' => $methodStmts
+                'stmts' => $methodStmts,
             ]);
 
             // Add method to class

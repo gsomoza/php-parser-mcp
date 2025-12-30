@@ -10,7 +10,7 @@ use PhpMcp\Server\Transports\StdioServerTransport;
 class Server
 {
     /**
-     * Create and configure the MCP server
+     * Create and configure the MCP server.
      */
     public static function create(): McpServer
     {
@@ -28,7 +28,7 @@ class Server
     }
 
     /**
-     * Run the MCP server with stdio transport
+     * Run the MCP server with stdio transport.
      */
     public static function run(): void
     {

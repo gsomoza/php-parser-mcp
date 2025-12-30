@@ -9,7 +9,7 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\NodeVisitorAbstract;
 
 /**
- * NodeVisitor to rename variables within a specific scope
+ * NodeVisitor to rename variables within a specific scope.
  */
 class VariableRenamer extends NodeVisitorAbstract
 {

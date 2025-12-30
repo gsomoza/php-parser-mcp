@@ -15,11 +15,12 @@ use Somoza\PhpParserMcp\Tools\Internal\ExtractMethod\VariableAnalyzer;
 class ExtractMethodTool
 {
     /**
-     * Extract a block of code into a separate method
+     * Extract a block of code into a separate method.
      *
      * @param string $file Path to the PHP file
      * @param string $selectionRange Range in format 'startLine:startColumn-endLine:endColumn' or 'startLine-endLine'
      * @param string $methodName Name for the new method
+     *
      * @return array{success: bool, code?: string, file?: string, message?: string, error?: string}
      */
     #[McpTool(
@@ -47,7 +48,7 @@ class ExtractMethodTool
         if (!RefactoringHelpers::tryParseRange($selectionRange, $startLine, $startColumn, $endLine, $endColumn)) {
             return [
                 'success' => false,
-                'error' => 'Invalid selection range format. Use \'startLine:startColumn-endLine:endColumn\' or \'startLine-endLine\''
+                'error' => 'Invalid selection range format. Use \'startLine:startColumn-endLine:endColumn\' or \'startLine-endLine\'',
             ];
         }
 
@@ -55,14 +56,14 @@ class ExtractMethodTool
         if (empty($methodName)) {
             return [
                 'success' => false,
-                'error' => 'Method name cannot be empty'
+                'error' => 'Method name cannot be empty',
             ];
         }
 
         if ($startLine > $endLine) {
             return [
                 'success' => false,
-                'error' => "Start line ({$startLine}) must be less than or equal to end line ({$endLine})"
+                'error' => "Start line ({$startLine}) must be less than or equal to end line ({$endLine})",
             ];
         }
 
@@ -74,12 +75,13 @@ class ExtractMethodTool
     }
 
     /**
-     * Extract method from source code
+     * Extract method from source code.
      *
      * @param string $code Source code
      * @param int $startLine Starting line number
      * @param int $endLine Ending line number
      * @param string $methodName Name for the new method
+     *
      * @return string Refactored source code
      */
     private function extractMethodInSource(string $code, int $startLine, int $endLine, string $methodName): string
