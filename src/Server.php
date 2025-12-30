@@ -17,13 +17,13 @@ class Server
         $server = McpServer::make()
             ->withServerInfo('php-parser-mcp', '0.1.0')
             ->build();
-        
+
         // Discover MCP tools via attributes
         $server->discover(
             basePath: dirname(__DIR__),
             scanDirs: ['src']
         );
-        
+
         return $server;
     }
 

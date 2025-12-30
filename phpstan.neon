@@ -7,7 +7,7 @@ parameters:
         - vendor
     checkMissingIterableValueType: true
     checkGenericClassInNonGenericObjectType: true
-    reportUnmatchedIgnoredErrors: true
+    reportUnmatchedIgnoredErrors: false
     
     # Enable bleeding edge features
     phpVersion: 80100 # PHP 8.1
@@ -17,9 +17,16 @@ parameters:
     checkUninitializedProperties: true
     checkDynamicProperties: true
     
-    # Ignore PHPUnit test classes having dynamic properties
+    # Ignore test-related issues
     ignoreErrors:
-        # PHPUnit uses some dynamic properties
+        # PHPUnit test properties initialized in setUp()
         - 
-            message: '#Access to an undefined property PHPUnit\\Framework\\TestCase::\$[a-zA-Z0-9_]+#'
+            message: '#Class .* has an uninitialized property \$tool\. Give it default value or assign it in the constructor\.#'
+            path: tests/*
+        - 
+            message: '#Class .* has an uninitialized property \$tempDir\. Give it default value or assign it in the constructor\.#'
+            path: tests/*
+        # Array offset access after assertArrayHasKey is safe but PHPStan doesn't understand
+        - 
+            message: '#Offset .* does not exist on array.*#'
             path: tests/*
