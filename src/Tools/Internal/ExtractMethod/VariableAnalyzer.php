@@ -8,12 +8,11 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Param;
-use PhpParser\Node\Stmt;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 
 /**
- * Analyzes variables in extracted code to determine parameters and return values
+ * Analyzes variables in extracted code to determine parameters and return values.
  */
 class VariableAnalyzer
 {
@@ -51,7 +50,7 @@ class VariableAnalyzer
         // and defined before the extracted code
         $params = [];
         foreach ($usedVars as $varName) {
-            if (in_array($varName, $definedBefore)) {
+            if (in_array($varName, $definedBefore, true)) {
                 $params[] = new Param(new Variable($varName));
             }
         }
@@ -73,7 +72,7 @@ class VariableAnalyzer
         // Return variables are those assigned in extracted code and used after
         $returnVars = [];
         foreach ($assignedVars as $varName) {
-            if (in_array($varName, $usedAfter)) {
+            if (in_array($varName, $usedAfter, true)) {
                 $returnVars[] = $varName;
             }
         }
@@ -83,6 +82,7 @@ class VariableAnalyzer
 
     /**
      * @param array<Node\Stmt> $statements
+     *
      * @return array<string>
      */
     private function findVariables(array $statements): array
@@ -103,7 +103,7 @@ class VariableAnalyzer
             public function enterNode(Node $node): ?int
             {
                 if ($node instanceof Variable && is_string($node->name) && $node->name !== 'this') {
-                    if (!in_array($node->name, $this->vars)) {
+                    if (!in_array($node->name, $this->vars, true)) {
                         $this->vars[] = $node->name;
                     }
                 }
@@ -122,6 +122,7 @@ class VariableAnalyzer
 
     /**
      * @param array<Node\Stmt> $statements
+     *
      * @return array<string>
      */
     private function findAssignedVariables(array $statements): array
@@ -143,7 +144,7 @@ class VariableAnalyzer
             {
                 if ($node instanceof Expr\Assign) {
                     if ($node->var instanceof Variable && is_string($node->var->name)) {
-                        if (!in_array($node->var->name, $this->assigned)) {
+                        if (!in_array($node->var->name, $this->assigned, true)) {
                             $this->assigned[] = $node->var->name;
                         }
                     }
@@ -204,7 +205,7 @@ class VariableAnalyzer
                 {
                     if ($node instanceof Expr\Assign) {
                         if ($node->var instanceof Variable && is_string($node->var->name)) {
-                            if (!in_array($node->var->name, $this->defined)) {
+                            if (!in_array($node->var->name, $this->defined, true)) {
                                 $this->defined[] = $node->var->name;
                             }
                         }
@@ -263,7 +264,7 @@ class VariableAnalyzer
                 public function enterNode(Node $node): ?int
                 {
                     if ($node instanceof Variable && is_string($node->name) && $node->name !== 'this') {
-                        if (!in_array($node->name, $this->used)) {
+                        if (!in_array($node->name, $this->used, true)) {
                             $this->used[] = $node->name;
                         }
                     }

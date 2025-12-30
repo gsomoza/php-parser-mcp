@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Somoza\PhpParserMcp\Tests\Tools;
 
-use Somoza\PhpParserMcp\Tools\ParseTool;
 use PHPUnit\Framework\TestCase;
+use Somoza\PhpParserMcp\Tools\ParseTool;
 
 class ParseToolTest extends TestCase
 {
@@ -61,7 +61,7 @@ class ParseToolTest extends TestCase
         $code = '<?php
 class MyClass {
     private $property;
-    
+
     public function myMethod() {
         return $this->property;
     }
@@ -199,7 +199,7 @@ $result = ($a + $b) * ($c - $d) / $e;
         }
 
         $file = $this->createTempFile('<?php echo "test";');
-        chmod($file, 0000);
+        chmod($file, 0o000);
 
         $result = $this->tool->parse($file);
 
@@ -208,6 +208,6 @@ $result = ($a + $b) * ($c - $d) / $e;
         $this->assertStringContainsString('not readable', $result['error']);
 
         // Clean up
-        chmod($file, 0644);
+        chmod($file, 0o644);
     }
 }

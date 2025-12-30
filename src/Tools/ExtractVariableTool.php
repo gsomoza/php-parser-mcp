@@ -14,11 +14,12 @@ use Somoza\PhpParserMcp\Tools\Internal\ExtractVariable\ExpressionFinder;
 class ExtractVariableTool
 {
     /**
-     * Extract an expression into a named variable
+     * Extract an expression into a named variable.
      *
      * @param string $file Path to the PHP file
      * @param string $selectionRange Range in format 'line:column' or 'line'
      * @param string $variableName Name for the new variable (with or without $ prefix)
+     *
      * @return array{success: bool, code?: string, file?: string, message?: string, error?: string}
      */
     #[McpTool(
@@ -46,7 +47,7 @@ class ExtractVariableTool
         if (!RefactoringHelpers::tryParseRange($selectionRange, $line, $column, $endLine, $endColumn)) {
             return [
                 'success' => false,
-                'error' => "Invalid selection range format. Use 'line:column' or 'line'"
+                'error' => "Invalid selection range format. Use 'line:column' or 'line'",
             ];
         }
 
@@ -62,7 +63,7 @@ class ExtractVariableTool
         if (empty($variableName) || !preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $variableName)) {
             return [
                 'success' => false,
-                'error' => 'Variable name cannot be empty or invalid'
+                'error' => 'Variable name cannot be empty or invalid',
             ];
         }
 
@@ -74,12 +75,13 @@ class ExtractVariableTool
     }
 
     /**
-     * Extract variable from source code
+     * Extract variable from source code.
      *
      * @param string $code Source code
      * @param int $line Line number
      * @param int $column Column number
      * @param string $variableName Variable name (without $ prefix)
+     *
      * @return string Refactored source code
      */
     private function extractVariableInSource(string $code, int $line, int $column, string $variableName): string

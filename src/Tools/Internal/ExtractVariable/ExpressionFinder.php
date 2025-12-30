@@ -10,7 +10,7 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\NodeVisitorAbstract;
 
 /**
- * NodeVisitor to find an expression at a specific line and column
+ * NodeVisitor to find an expression at a specific line and column.
  */
 class ExpressionFinder extends NodeVisitorAbstract
 {
@@ -22,6 +22,7 @@ class ExpressionFinder extends NodeVisitorAbstract
 
     /**
      * @param int $targetColumn Not currently used, kept for potential future use
+     *
      * @phpstan-ignore-next-line constructor.unusedParam
      */
     public function __construct(int $targetLine, int $targetColumn)

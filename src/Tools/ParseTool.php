@@ -19,9 +19,10 @@ class ParseTool
     }
 
     /**
-     * Parse a PHP file and return the Abstract Syntax Tree (AST) representation
+     * Parse a PHP file and return the Abstract Syntax Tree (AST) representation.
      *
      * @param string $file Path to the PHP file to parse
+     *
      * @return array{success: bool, ast?: string, nodeCount?: int, file?: string, error?: string}
      */
     #[McpTool(
@@ -40,7 +41,7 @@ class ParseTool
             if (!file_exists($file)) {
                 return [
                     'success' => false,
-                    'error' => "File not found: {$file}"
+                    'error' => "File not found: {$file}",
                 ];
             }
 
@@ -48,7 +49,7 @@ class ParseTool
             if (!is_readable($file)) {
                 return [
                     'success' => false,
-                    'error' => "File is not readable: {$file}"
+                    'error' => "File is not readable: {$file}",
                 ];
             }
 
@@ -57,7 +58,7 @@ class ParseTool
             if ($code === false) {
                 return [
                     'success' => false,
-                    'error' => "Failed to read file: {$file}"
+                    'error' => "Failed to read file: {$file}",
                 ];
             }
 
@@ -67,7 +68,7 @@ class ParseTool
             if ($ast === null) {
                 return [
                     'success' => false,
-                    'error' => 'Failed to parse code: parser returned null'
+                    'error' => 'Failed to parse code: parser returned null',
                 ];
             }
 
@@ -78,23 +79,24 @@ class ParseTool
                 'success' => true,
                 'ast' => $astString,
                 'nodeCount' => count($ast),
-                'file' => $file
+                'file' => $file,
             ];
         } catch (Error $e) {
             return [
                 'success' => false,
-                'error' => 'Parse error: ' . $e->getMessage()
+                'error' => 'Parse error: ' . $e->getMessage(),
             ];
         } catch (\Throwable $e) {
             return [
                 'success' => false,
-                'error' => 'Unexpected error: ' . $e->getMessage()
+                'error' => 'Unexpected error: ' . $e->getMessage(),
             ];
         }
     }
 
     /**
-     * Convert AST nodes to a readable string representation
+     * Convert AST nodes to a readable string representation.
+     *
      * @param array<\PhpParser\Node> $nodes
      */
     private function astToString(array $nodes): string
@@ -107,7 +109,7 @@ class ParseTool
     }
 
     /**
-     * Convert a single node to string with indentation, including child nodes
+     * Convert a single node to string with indentation, including child nodes.
      */
     private function nodeToString(object $node, int $depth): string
     {
@@ -156,7 +158,7 @@ class ParseTool
     }
 
     /**
-     * Check if a value is a PhpParser node object
+     * Check if a value is a PhpParser node object.
      */
     private function isPhpParserNode(mixed $value): bool
     {

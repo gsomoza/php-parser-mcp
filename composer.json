@@ -19,8 +19,7 @@
         "phpstan/phpstan": "^1.10",
         "friendsofphp/php-cs-fixer": "^3.64",
         "php-parallel-lint/php-parallel-lint": "^1.4",
-        "infection/infection": "^0.29",
-        "maglnet/composer-require-checker": "^4.0"
+        "infection/infection": "^0.29"
     },
     "autoload": {
         "psr-4": {
@@ -49,7 +48,6 @@
         "test": "phpunit",
         "test:coverage": "phpunit --coverage-html=coverage --coverage-clover=coverage/clover.xml",
         "infection": "infection --threads=4 --min-msi=50 --min-covered-msi=70",
-        "require-checker": "composer-require-checker check",
         "qa": [
             "@lint",
             "@cs-check",
@@ -65,7 +63,6 @@
         "test": "Run PHPUnit tests",
         "test:coverage": "Run PHPUnit tests with code coverage",
         "infection": "Run mutation testing",
-        "require-checker": "Check for missing composer dependencies",
         "qa": "Run all quality assurance checks"
     },
     "minimum-stability": "stable",

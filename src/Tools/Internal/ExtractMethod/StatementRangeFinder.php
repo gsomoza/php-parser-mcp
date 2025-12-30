@@ -10,7 +10,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeVisitorAbstract;
 
 /**
- * NodeVisitor to find statements in a line range
+ * NodeVisitor to find statements in a line range.
  */
 class StatementRangeFinder extends NodeVisitorAbstract
 {

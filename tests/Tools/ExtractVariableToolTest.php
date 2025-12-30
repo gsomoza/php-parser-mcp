@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Somoza\PhpParserMcp\Tests\Tools;
 
-use Somoza\PhpParserMcp\Tools\ExtractVariableTool;
 use PHPUnit\Framework\TestCase;
+use Somoza\PhpParserMcp\Tools\ExtractVariableTool;
 
 class ExtractVariableToolTest extends TestCase
 {
@@ -181,7 +181,7 @@ $value = $array[0];
         }
 
         $file = $this->createTempFile('<?php $x = 1 + 2;');
-        chmod($file, 0000);
+        chmod($file, 0o000);
 
         $result = $this->tool->extract($file, '1:12', '$var');
 
@@ -190,7 +190,7 @@ $value = $array[0];
         $this->assertStringContainsString('not readable', $result['error']);
 
         // Clean up
-        chmod($file, 0644);
+        chmod($file, 0o644);
     }
 
     public function testExtractInvalidLineNumber(): void
