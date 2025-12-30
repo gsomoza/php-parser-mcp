@@ -31,7 +31,7 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Configure Composer authentication
-        if: secrets.COMPOSER_TOKEN
+        if: secrets.COMPOSER_TOKEN != ''
         env:
           COMPOSER_TOKEN: ${{ secrets.COMPOSER_TOKEN }}
         run: |
