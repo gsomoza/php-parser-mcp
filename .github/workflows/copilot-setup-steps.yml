@@ -39,9 +39,9 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Configure Composer authentication
-        if: secrets.COMPOSER_TOKEN != ''
+        if: env.COMPOSER_TOKEN != ''
         env:
-          COMPOSER_TOKEN: ${{ secrets.COMPOSER_TOKEN }}
+          COMPOSER_TOKEN: ${{ env.COMPOSER_TOKEN }}
         run: |
           # Configure Composer to use the token for authentication
           # This can be used for packagist.org, private repositories, or other
