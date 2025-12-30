@@ -1,0 +1,55 @@
+name: Copilot Environment Setup
+on:
+  workflow_dispatch:
+  issues:
+    types: [opened, reopened]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, xml, ctype, json
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict
+
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run PHPUnit tests
+        run: composer test
+
+      - name: Run PHPCS
+        run: composer phpcs
+
+      - name: Run PHPStan
+        run: composer phpstan
+
+      - name: Verify environment
+        run: |
+          echo "PHP Version: $(php -v)"
+          echo "Composer Version: $(composer --version)"
+          echo "PHPUnit Version: $(vendor/bin/phpunit --version)"
+          echo "PHPCS Version: $(vendor/bin/phpcs --version)"
+          echo "PHPStan Version: $(vendor/bin/phpstan --version)"
+          echo "Environment setup completed successfully!"

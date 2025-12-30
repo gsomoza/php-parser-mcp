@@ -93,6 +93,36 @@ Or with PHPUnit directly:
 vendor/bin/phpunit
 ```
 
+### Code Quality
+
+This project uses several code quality tools:
+
+#### PHP_CodeSniffer (PHPCS)
+
+Check code style compliance with PSR-12:
+
+```bash
+composer phpcs
+```
+
+Automatically fix code style issues:
+
+```bash
+composer phpcbf
+```
+
+#### PHPStan
+
+Run static analysis (level 8):
+
+```bash
+composer phpstan
+```
+
+Configuration files:
+- `phpcs.xml` - PHPCS configuration
+- `phpstan.neon` - PHPStan configuration
+
 ## Development
 
 ### Project Structure

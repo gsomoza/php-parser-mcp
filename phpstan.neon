@@ -1,0 +1,25 @@
+parameters:
+    level: 8
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - vendor
+    checkMissingIterableValueType: true
+    checkGenericClassInNonGenericObjectType: true
+    reportUnmatchedIgnoredErrors: true
+    
+    # Enable bleeding edge features
+    phpVersion: 80100 # PHP 8.1
+    
+    # Additional checks
+    checkTooWideReturnTypesInProtectedAndPublicMethods: true
+    checkUninitializedProperties: true
+    checkDynamicProperties: true
+    
+    # Ignore PHPUnit test classes having dynamic properties
+    ignoreErrors:
+        # PHPUnit uses some dynamic properties
+        - 
+            message: '#Access to an undefined property PHPUnit\\Framework\\TestCase::\$[a-zA-Z0-9_]+#'
+            path: tests/*

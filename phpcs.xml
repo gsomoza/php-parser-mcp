@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<ruleset name="PHP Parser MCP Coding Standards">
+    <description>Coding standards for PHP Parser MCP based on PSR-12</description>
+
+    <!-- Show progress and colors -->
+    <arg value="p"/>
+    <arg name="colors"/>
+
+    <!-- Paths to check -->
+    <file>src</file>
+    <file>tests</file>
+
+    <!-- Exclude vendor directory -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+
+    <!-- Use PSR-12 as the base coding standard (which includes PSR-1 and PSR-2) -->
+    <rule ref="PSR12"/>
+
+    <!-- Additional rules -->
+    
+    <!-- Require declare(strict_types=1) at the top of files -->
+    <rule ref="Generic.PHP.RequireStrictTypes"/>
+
+    <!-- Enforce array syntax -->
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+
+    <!-- Disallow deprecated functions -->
+    <rule ref="Generic.PHP.DeprecatedFunctions"/>
+
+    <!-- Disallow unnecessary string concatenation -->
+    <rule ref="Generic.Strings.UnnecessaryStringConcat"/>
+
+    <!-- Enforce consistent function call signatures -->
+    <rule ref="Generic.Functions.FunctionCallArgumentSpacing"/>
+
+    <!-- Enforce no space after cast -->
+    <rule ref="Generic.Formatting.SpaceAfterCast">
+        <properties>
+            <property name="spacing" value="0"/>
+        </properties>
+    </rule>
+
+    <!-- Enforce uppercase PHP constants -->
+    <rule ref="Generic.PHP.UpperCaseConstant"/>
+
+    <!-- Line length warnings at 120 characters, errors at 150 -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="150"/>
+        </properties>
+    </rule>
+</ruleset>

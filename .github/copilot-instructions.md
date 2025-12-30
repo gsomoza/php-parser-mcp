@@ -27,6 +27,16 @@ This is a Model Context Protocol (MCP) server that provides PHP refactoring tool
 - Test both successful operations and error cases
 - Mock external dependencies where appropriate
 
+## Code Quality Tools
+- **PHPCS**: Use PHP_CodeSniffer to enforce PSR-12 coding standards
+  - Run with: `composer phpcs`
+  - Auto-fix issues with: `composer phpcbf`
+  - Configuration: `phpcs.xml`
+- **PHPStan**: Use PHPStan for static analysis at level 8
+  - Run with: `composer phpstan`
+  - Configuration: `phpstan.neon`
+- Always run both tools before committing code
+
 ## Documentation
 - Document all public methods and classes
 - Include usage examples in README
