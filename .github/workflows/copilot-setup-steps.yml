@@ -1,17 +1,23 @@
-name: Copilot Environment Setup
+---
+name: Copilot Setup Steps
+
 on:
   workflow_dispatch:
-  issues:
-    types: [opened, reopened]
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
   pull_request:
-    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
 
 jobs:
-  setup:
+  copilot-setup-steps:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v5
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -24,17 +30,30 @@ jobs:
       - name: Validate composer.json and composer.lock
         run: composer validate --strict
 
-      - name: Cache Composer packages
+      - name: Get Composer Cache Directory
         id: composer-cache
-        uses: actions/cache@v3
-        with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Configure Composer authentication
+        if: secrets.COMPOSER_TOKEN != ''
+        env:
+          COMPOSER_TOKEN: ${{ secrets.COMPOSER_TOKEN }}
+        run: |
+          # Configure Composer to use the token for authentication
+          # This can be used for packagist.org, private repositories, or other
+          # Composer repositories that require authentication
+          composer config --global github-oauth.github.com "$COMPOSER_TOKEN"
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
 
       - name: Run PHPUnit tests
         run: composer test
@@ -44,7 +63,7 @@ jobs:
 
       - name: Run PHPStan
         run: composer phpstan
-
+        
       - name: Verify environment
         run: |
           echo "PHP Version: $(php -v)"
