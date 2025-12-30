@@ -6,13 +6,10 @@ namespace Somoza\PhpParserMcp\Tools;
 
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
-use PhpParser\Node;
-use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\Variable;
-use PhpParser\Node\Stmt\Expression;
 use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitorAbstract;
 use Somoza\PhpParserMcp\Helpers\RefactoringHelpers;
+use Somoza\PhpParserMcp\Tools\Internal\ExtractVariable\ExpressionExtractor;
+use Somoza\PhpParserMcp\Tools\Internal\ExtractVariable\ExpressionFinder;
 
 class ExtractVariableTool
 {
@@ -45,28 +42,34 @@ class ExtractVariableTool
         )]
         string $variableName
     ): array {
-        // Parse the selection range
-        if (!RefactoringHelpers::tryParseRange($selectionRange, $startLine, $startColumn, $endLine, $endColumn)) {
+        // Parse the selection range (line and optional column)
+        if (!RefactoringHelpers::tryParseRange($selectionRange, $line, $column, $endLine, $endColumn)) {
             return [
                 'success' => false,
                 'error' => "Invalid selection range format. Use 'line:column' or 'line'"
             ];
         }
 
-        // Normalize variable name (remove $ prefix if present)
+        // Normalize variable name (add $ if missing)
+        if (!str_starts_with($variableName, '$')) {
+            $variableName = '$' . $variableName;
+        }
+
+        // Remove $ prefix for internal use
         $variableName = ltrim($variableName, '$');
 
-        if (empty($variableName)) {
+        // Validate variable name
+        if (empty($variableName) || !preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $variableName)) {
             return [
                 'success' => false,
-                'error' => 'Variable name cannot be empty'
+                'error' => 'Variable name cannot be empty or invalid'
             ];
         }
 
         return RefactoringHelpers::applyFileEdit(
             $file,
-            fn($code) => $this->extractVariableInSource($code, $startLine, $startColumn, $variableName),
-            "Successfully extracted variable '\${$variableName}' at {$selectionRange} in {$file}"
+            fn($code) => $this->extractVariableInSource($code, $line, $column ?? 0, $variableName),
+            "Successfully extracted variable '\${$variableName}' at line {$line} in {$file}"
         );
     }
 
@@ -76,7 +79,7 @@ class ExtractVariableTool
      * @param string $code Source code
      * @param int $line Line number
      * @param int $column Column number
-     * @param string $variableName Variable name
+     * @param string $variableName Variable name (without $ prefix)
      * @return string Refactored source code
      */
     private function extractVariableInSource(string $code, int $line, int $column, string $variableName): string
@@ -84,7 +87,7 @@ class ExtractVariableTool
         // Parse the code
         $ast = RefactoringHelpers::parseCode($code);
 
-        // Find the expression at the specified line and column
+        // Find the expression to extract
         $expressionFinder = new ExpressionFinder($line, $column);
         $traverser = new NodeTraverser();
         $traverser->addVisitor($expressionFinder);
@@ -109,150 +112,5 @@ class ExtractVariableTool
 
         // Generate the modified code
         return RefactoringHelpers::printCode($ast);
-    }
-}
-
-/**
- * NodeVisitor to find an expression at a specific line and column
- */
-class ExpressionFinder extends NodeVisitorAbstract
-{
-    private int $targetLine;
-    private ?Node $parentStatement = null;
-    /** @var array<Node\Stmt> */
-    private array $stmtStack = [];
-    private ?Expr $bestMatch = null;
-
-    /**
-     * @param int $targetColumn Not currently used, kept for potential future use
-     * @phpstan-ignore-next-line constructor.unusedParam
-     */
-    public function __construct(int $targetLine, int $targetColumn)
-    {
-        $this->targetLine = $targetLine;
-        // Note: $targetColumn parameter kept for backward compatibility but not used
-    }
-
-    public function enterNode(Node $node): ?int
-    {
-        // Track statements
-        if ($node instanceof Node\Stmt) {
-            $this->stmtStack[] = $node;
-        }
-
-        // Look for expressions at the target location (but not assignments or variables)
-        if ($node instanceof Expr && !($node instanceof Variable) && !($node instanceof Expr\Assign)) {
-            if ($node->hasAttribute('startLine')) {
-                $startLine = $node->getAttribute('startLine');
-
-                // Match expressions on the target line
-                if ($startLine === $this->targetLine) {
-                    // Store the first match as best match
-                    if ($this->bestMatch === null) {
-                        $this->bestMatch = $node;
-                        $this->parentStatement = !empty($this->stmtStack) ? end($this->stmtStack) : null;
-                    } elseif ($this->isLessSpecific($node, $this->bestMatch)) {
-                        // Prefer larger (less specific / outermost) expressions on the same line
-                        $this->bestMatch = $node;
-                        $this->parentStatement = !empty($this->stmtStack) ? end($this->stmtStack) : null;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public function leaveNode(Node $node): ?int
-    {
-        // Pop statements
-        if ($node instanceof Node\Stmt) {
-            if (!empty($this->stmtStack) && end($this->stmtStack) === $node) {
-                array_pop($this->stmtStack);
-            }
-        }
-
-        return null;
-    }
-
-    private function isLessSpecific(Node $node1, Node $node2): bool
-    {
-        // A node is less specific if it contains another node
-        if (!$node1->hasAttribute('startFilePos') || !$node1->hasAttribute('endFilePos')) {
-            return false;
-        }
-        if (!$node2->hasAttribute('startFilePos') || !$node2->hasAttribute('endFilePos')) {
-            return true;
-        }
-
-        $start1 = $node1->getAttribute('startFilePos');
-        $end1 = $node1->getAttribute('endFilePos');
-        $start2 = $node2->getAttribute('startFilePos');
-        $end2 = $node2->getAttribute('endFilePos');
-
-        // Node1 is less specific if it contains node2
-        return $start1 <= $start2 && $end1 >= $end2 &&
-               !($start1 === $start2 && $end1 === $end2);
-    }
-
-    public function getExpression(): ?Expr
-    {
-        // Return the best match found
-        return $this->bestMatch;
-    }
-
-    public function getParentStatement(): ?Node
-    {
-        return $this->parentStatement;
-    }
-}
-
-/**
- * NodeVisitor to extract an expression into a variable
- */
-class ExpressionExtractor extends NodeVisitorAbstract
-{
-    private Expr $targetExpr;
-    private Node $parentStmt;
-    private string $variableName;
-    private bool $extracted = false;
-
-    public function __construct(Expr $targetExpr, Node $parentStmt, string $variableName)
-    {
-        $this->targetExpr = $targetExpr;
-        $this->parentStmt = $parentStmt;
-        $this->variableName = $variableName;
-    }
-
-    /**
-     * @return Node|array<Node>|null
-     */
-    public function leaveNode(Node $node)
-    {
-        // Replace the target expression with a variable reference
-        if ($node === $this->targetExpr && !$this->extracted) {
-            return new Variable($this->variableName);
-        }
-
-        // Insert the variable assignment before the parent statement
-        if ($node === $this->parentStmt && !$this->extracted) {
-            $this->extracted = true;
-
-            // Create the assignment statement
-            $assignment = new Expression(
-                new Expr\Assign(
-                    new Variable($this->variableName),
-                    clone $this->targetExpr
-                )
-            );
-
-            // Return an array to insert the assignment before the current statement
-            return [
-                $assignment,
-                $node
-            ];
-        }
-
-        return null;
     }
 }
