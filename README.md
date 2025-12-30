@@ -122,6 +122,22 @@ This server uses:
 
 Tools are discovered automatically via PHP attributes, making it easy to add new refactoring capabilities.
 
+### GitHub Copilot Setup
+
+This repository includes a Copilot setup workflow (`.github/workflows/copilot-setup-steps.yml`) that configures the development environment for GitHub Copilot's coding agent.
+
+#### Required Repository Secret
+
+To enable Composer authentication, you need to add a `COMPOSER_TOKEN` secret to your repository:
+
+1. Go to your repository's **Settings** → **Secrets and variables** → **Actions**
+2. Click **New repository secret**
+3. Name: `COMPOSER_TOKEN`
+4. Value: Your GitHub personal access token or Composer authentication token
+5. Click **Add secret**
+
+The token will be used to authenticate Composer when installing private dependencies or accessing rate-limited package repositories.
+
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
