@@ -6,13 +6,10 @@ namespace Somoza\PhpParserMcp\Tools;
 
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
-use PhpParser\Error;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
-use PhpParser\ParserFactory;
-use PhpParser\PrettyPrinter\Standard;
 use Somoza\PhpParserMcp\Helpers\RefactoringHelpers;
 
 class RenameVariableTool
@@ -119,19 +116,24 @@ class ScopeFinder extends NodeVisitorAbstract
 {
     private int $targetLine;
     private ?Node $scope = null;
+    /** @var array<Node> */
     private array $scopeStack = [];
-    private array $ast;
 
+    /**
+     * @param array<\PhpParser\Node> $ast Not currently used, kept for potential future use
+     * @phpstan-ignore-next-line constructor.unusedParam
+     */
     public function __construct(int $targetLine, array $ast)
     {
         $this->targetLine = $targetLine;
-        $this->ast = $ast;
+        // Note: $ast parameter kept for backward compatibility but not used
     }
 
     public function enterNode(Node $node): ?int
     {
         // Track scope nodes (functions, methods, closures)
-        if ($node instanceof Node\Stmt\Function_
+        if (
+            $node instanceof Node\Stmt\Function_
             || $node instanceof Node\Stmt\ClassMethod
             || $node instanceof Node\Expr\Closure
             || $node instanceof Node\Expr\ArrowFunction
@@ -158,7 +160,8 @@ class ScopeFinder extends NodeVisitorAbstract
     public function leaveNode(Node $node): ?int
     {
         // Pop scope when leaving scope nodes
-        if ($node instanceof Node\Stmt\Function_
+        if (
+            $node instanceof Node\Stmt\Function_
             || $node instanceof Node\Stmt\ClassMethod
             || $node instanceof Node\Expr\Closure
             || $node instanceof Node\Expr\ArrowFunction
@@ -201,7 +204,7 @@ class VariableRenamer extends NodeVisitorAbstract
         $this->newName = $newName;
         $this->targetScope = $targetScope;
         $this->isGlobalScope = $isGlobalScope;
-        
+
         // If target scope is global, start in scope
         if ($isGlobalScope) {
             $this->inTargetScope = true;
@@ -217,7 +220,8 @@ class VariableRenamer extends NodeVisitorAbstract
 
         // Track entering nested scopes when in global scope
         if ($this->isGlobalScope) {
-            if ($node instanceof Node\Stmt\Function_
+            if (
+                $node instanceof Node\Stmt\Function_
                 || $node instanceof Node\Stmt\ClassMethod
                 || $node instanceof Node\Expr\Closure
                 || $node instanceof Node\Expr\ArrowFunction
@@ -233,7 +237,8 @@ class VariableRenamer extends NodeVisitorAbstract
     {
         // For global scope, don't rename inside functions/methods/closures
         if ($this->isGlobalScope) {
-            if ($node instanceof Node\Stmt\Function_
+            if (
+                $node instanceof Node\Stmt\Function_
                 || $node instanceof Node\Stmt\ClassMethod
                 || $node instanceof Node\Expr\Closure
                 || $node instanceof Node\Expr\ArrowFunction

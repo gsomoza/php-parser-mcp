@@ -31,7 +31,7 @@ class RefactoringHelpers
         // Also support simpler formats:
         // - "startLine-endLine" (line range only)
         // - "line:column" (single position)
-        
+
         if (preg_match('/^(\d+):(\d+)-(\d+):(\d+)$/', $selectionRange, $matches)) {
             // Full format: "startLine:startColumn-endLine:endColumn"
             $startLine = (int)$matches[1];
@@ -40,7 +40,7 @@ class RefactoringHelpers
             $endColumn = (int)$matches[4];
             return true;
         }
-        
+
         if (preg_match('/^(\d+)-(\d+)$/', $selectionRange, $matches)) {
             // Line range only: "startLine-endLine"
             $startLine = (int)$matches[1];
@@ -49,7 +49,7 @@ class RefactoringHelpers
             $endColumn = 0;
             return true;
         }
-        
+
         if (preg_match('/^(\d+):(\d+)$/', $selectionRange, $matches)) {
             // Single position: "line:column"
             $startLine = (int)$matches[1];
@@ -58,7 +58,7 @@ class RefactoringHelpers
             $endColumn = $startColumn;
             return true;
         }
-        
+
         if (preg_match('/^(\d+)$/', $selectionRange, $matches)) {
             // Single line: "line"
             $startLine = (int)$matches[1];
@@ -67,7 +67,7 @@ class RefactoringHelpers
             $endColumn = 0;
             return true;
         }
-        
+
         return false;
     }
 
@@ -144,7 +144,7 @@ class RefactoringHelpers
      * Parse PHP code into an AST
      *
      * @param string $code PHP source code
-     * @return array AST nodes
+     * @return array<\PhpParser\Node> AST nodes
      * @throws Error If parsing fails
      */
     public static function parseCode(string $code): array
@@ -163,7 +163,7 @@ class RefactoringHelpers
     /**
      * Pretty print AST back to PHP code
      *
-     * @param array $ast AST nodes
+     * @param array<\PhpParser\Node> $ast AST nodes
      * @return string PHP source code
      */
     public static function printCode(array $ast): string

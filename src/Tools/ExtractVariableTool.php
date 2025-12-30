@@ -6,15 +6,12 @@ namespace Somoza\PhpParserMcp\Tools;
 
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
-use PhpParser\Error;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
-use PhpParser\ParserFactory;
-use PhpParser\PrettyPrinter\Standard;
 use Somoza\PhpParserMcp\Helpers\RefactoringHelpers;
 
 class ExtractVariableTool
@@ -121,16 +118,19 @@ class ExtractVariableTool
 class ExpressionFinder extends NodeVisitorAbstract
 {
     private int $targetLine;
-    private int $targetColumn;
-    private ?Expr $expression = null;
     private ?Node $parentStatement = null;
+    /** @var array<Node\Stmt> */
     private array $stmtStack = [];
     private ?Expr $bestMatch = null;
 
+    /**
+     * @param int $targetColumn Not currently used, kept for potential future use
+     * @phpstan-ignore-next-line constructor.unusedParam
+     */
     public function __construct(int $targetLine, int $targetColumn)
     {
         $this->targetLine = $targetLine;
-        $this->targetColumn = $targetColumn;
+        // Note: $targetColumn parameter kept for backward compatibility but not used
     }
 
     public function enterNode(Node $node): ?int
@@ -144,7 +144,7 @@ class ExpressionFinder extends NodeVisitorAbstract
         if ($node instanceof Expr && !($node instanceof Variable) && !($node instanceof Expr\Assign)) {
             if ($node->hasAttribute('startLine')) {
                 $startLine = $node->getAttribute('startLine');
-                
+
                 // Match expressions on the target line
                 if ($startLine === $this->targetLine) {
                     // Store the first match as best match
@@ -192,7 +192,7 @@ class ExpressionFinder extends NodeVisitorAbstract
         $end2 = $node2->getAttribute('endFilePos');
 
         // Node1 is less specific if it contains node2
-        return $start1 <= $start2 && $end1 >= $end2 && 
+        return $start1 <= $start2 && $end1 >= $end2 &&
                !($start1 === $start2 && $end1 === $end2);
     }
 
@@ -225,6 +225,9 @@ class ExpressionExtractor extends NodeVisitorAbstract
         $this->variableName = $variableName;
     }
 
+    /**
+     * @return Node|array<Node>|null
+     */
     public function leaveNode(Node $node)
     {
         // Replace the target expression with a variable reference
@@ -235,7 +238,7 @@ class ExpressionExtractor extends NodeVisitorAbstract
         // Insert the variable assignment before the parent statement
         if ($node === $this->parentStmt && !$this->extracted) {
             $this->extracted = true;
-            
+
             // Create the assignment statement
             $assignment = new Expression(
                 new Expr\Assign(

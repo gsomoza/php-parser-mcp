@@ -6,7 +6,6 @@ namespace Somoza\PhpParserMcp\Tools;
 
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
-use PhpParser\Error;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
@@ -17,8 +16,6 @@ use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
-use PhpParser\ParserFactory;
-use PhpParser\PrettyPrinter\Standard;
 use Somoza\PhpParserMcp\Helpers\RefactoringHelpers;
 
 class ExtractMethodTool
@@ -146,10 +143,14 @@ class StatementRangeFinder extends NodeVisitorAbstract
 {
     private int $startLine;
     private int $endLine;
+    /** @var array<Node\Stmt> */
     private array $statements = [];
+    /** @var Node\Stmt\ClassMethod|Node\Stmt\Function_|null */
     private ?Node $parentMethod = null;
     private ?Node\Stmt\Class_ $parentClass = null;
+    /** @var array<Node\Stmt\ClassMethod|Node\Stmt\Function_> */
     private array $methodStack = [];
+    /** @var array<Node\Stmt\Class_> */
     private array $classStack = [];
 
     public function __construct(int $startLine, int $endLine)
@@ -179,7 +180,7 @@ class StatementRangeFinder extends NodeVisitorAbstract
                 // Statement is completely within the range
                 if ($nodeStart >= $this->startLine && $nodeEnd <= $this->endLine) {
                     $this->statements[] = $node;
-                    
+
                     // Set parent method and class if not set
                     if ($this->parentMethod === null && !empty($this->methodStack)) {
                         $this->parentMethod = end($this->methodStack);
@@ -213,11 +214,17 @@ class StatementRangeFinder extends NodeVisitorAbstract
         return null;
     }
 
+    /**
+     * @return array<Node\Stmt>
+     */
     public function getStatements(): array
     {
         return $this->statements;
     }
 
+    /**
+     * @return Node\Stmt\ClassMethod|Node\Stmt\Function_|null
+     */
     public function getParentMethod(): ?Node
     {
         return $this->parentMethod;
@@ -234,11 +241,17 @@ class StatementRangeFinder extends NodeVisitorAbstract
  */
 class VariableAnalyzer
 {
+    /** @var array<Node\Stmt> */
     private array $statementsToExtract;
+    /** @var Node\Stmt\ClassMethod|Node\Stmt\Function_|null */
     private ?Node $parentMethod;
     private int $startLine;
     private int $endLine;
 
+    /**
+     * @param array<Node\Stmt> $statementsToExtract
+     * @param Node\Stmt\ClassMethod|Node\Stmt\Function_|null $parentMethod
+     */
     public function __construct(array $statementsToExtract, ?Node $parentMethod, int $startLine, int $endLine)
     {
         $this->statementsToExtract = $statementsToExtract;
@@ -247,11 +260,14 @@ class VariableAnalyzer
         $this->endLine = $endLine;
     }
 
+    /**
+     * @return array<Param>
+     */
     public function getParameters(): array
     {
         // Variables used in extracted code
         $usedVars = $this->findVariables($this->statementsToExtract);
-        
+
         // Variables defined before the extracted code in the parent method
         $definedBefore = $this->findVariablesDefinedBefore();
 
@@ -267,11 +283,14 @@ class VariableAnalyzer
         return $params;
     }
 
+    /**
+     * @return array<string>
+     */
     public function getReturnVariables(): array
     {
         // Variables assigned in extracted code
         $assignedVars = $this->findAssignedVariables($this->statementsToExtract);
-        
+
         // Variables used after the extracted code
         $usedAfter = $this->findVariablesUsedAfter();
 
@@ -286,12 +305,20 @@ class VariableAnalyzer
         return $returnVars;
     }
 
+    /**
+     * @param array<Node\Stmt> $statements
+     * @return array<string>
+     */
     private function findVariables(array $statements): array
     {
         $vars = [];
-        $visitor = new class($vars) extends NodeVisitorAbstract {
+        $visitor = new class ($vars) extends NodeVisitorAbstract {
+            /** @var array<string> */
             private array $vars;
 
+            /**
+             * @param array<string> $vars
+             */
             public function __construct(array &$vars)
             {
                 $this->vars = &$vars;
@@ -317,12 +344,20 @@ class VariableAnalyzer
         return $vars;
     }
 
+    /**
+     * @param array<Node\Stmt> $statements
+     * @return array<string>
+     */
     private function findAssignedVariables(array $statements): array
     {
         $assigned = [];
-        $visitor = new class($assigned) extends NodeVisitorAbstract {
+        $visitor = new class ($assigned) extends NodeVisitorAbstract {
+            /** @var array<string> */
             private array $assigned;
 
+            /**
+             * @param array<string> $assigned
+             */
             public function __construct(array &$assigned)
             {
                 $this->assigned = &$assigned;
@@ -350,6 +385,9 @@ class VariableAnalyzer
         return $assigned;
     }
 
+    /**
+     * @return array<string>
+     */
     private function findVariablesDefinedBefore(): array
     {
         if ($this->parentMethod === null) {
@@ -357,26 +395,30 @@ class VariableAnalyzer
         }
 
         $defined = [];
-        
+
         // Get all statements in parent method
         $stmts = $this->parentMethod->stmts ?? [];
-        
+
         foreach ($stmts as $stmt) {
             if (!$stmt->hasAttribute('startLine')) {
                 continue;
             }
-            
+
             $stmtLine = $stmt->getAttribute('startLine');
-            
+
             // Only look at statements before the extracted range
             if ($stmtLine >= $this->startLine) {
                 break;
             }
 
             // Find assignments in this statement
-            $visitor = new class($defined) extends NodeVisitorAbstract {
+            $visitor = new class ($defined) extends NodeVisitorAbstract {
+                /** @var array<string> */
                 private array $defined;
 
+                /**
+                 * @param array<string> $defined
+                 */
                 public function __construct(array &$defined)
                 {
                     $this->defined = &$defined;
@@ -403,6 +445,9 @@ class VariableAnalyzer
         return $defined;
     }
 
+    /**
+     * @return array<string>
+     */
     private function findVariablesUsedAfter(): array
     {
         if ($this->parentMethod === null) {
@@ -410,26 +455,30 @@ class VariableAnalyzer
         }
 
         $used = [];
-        
+
         // Get all statements in parent method
         $stmts = $this->parentMethod->stmts ?? [];
-        
+
         foreach ($stmts as $stmt) {
             if (!$stmt->hasAttribute('startLine')) {
                 continue;
             }
-            
+
             $stmtLine = $stmt->getAttribute('startLine');
-            
+
             // Only look at statements after the extracted range
             if ($stmtLine <= $this->endLine) {
                 continue;
             }
 
             // Find variable uses in this statement
-            $visitor = new class($used) extends NodeVisitorAbstract {
+            $visitor = new class ($used) extends NodeVisitorAbstract {
+                /** @var array<string> */
                 private array $used;
 
+                /**
+                 * @param array<string> $used
+                 */
                 public function __construct(array &$used)
                 {
                     $this->used = &$used;
@@ -460,17 +509,27 @@ class VariableAnalyzer
  */
 class MethodExtractor extends NodeVisitorAbstract
 {
+    /** @var array<Node\Stmt> */
     private array $statementsToExtract;
+    /** @var Node\Stmt\ClassMethod|Node\Stmt\Function_|null */
     private ?Node $parentMethod;
     private Node\Stmt\Class_ $parentClass;
     private string $methodName;
+    /** @var array<Param> */
     private array $params;
+    /** @var array<string> */
     private array $returnVars;
     private int $startLine;
     private int $endLine;
     private bool $extracted = false;
     private bool $methodAdded = false;
 
+    /**
+     * @param array<Node\Stmt> $statementsToExtract
+     * @param Node\Stmt\ClassMethod|Node\Stmt\Function_|null $parentMethod
+     * @param array<Param> $params
+     * @param array<string> $returnVars
+     */
     public function __construct(
         array $statementsToExtract,
         ?Node $parentMethod,
@@ -533,10 +592,13 @@ class MethodExtractor extends NodeVisitorAbstract
             $this->extracted = true;
 
             $newStmts = [];
-            $inRange = false;
             $replacementAdded = false;
 
-            foreach ($node->stmts as $stmt) {
+            // We know $node is the parent method (ClassMethod or Function_), which has stmts property
+            /** @var ClassMethod|Stmt\Function_ $node */
+            $stmts = $node->stmts ?? [];
+            
+            foreach ($stmts as $stmt) {
                 // Skip statements without line information - they should not be in our range
                 if (!$stmt->hasAttribute('startLine')) {
                     $newStmts[] = $stmt;
@@ -552,12 +614,13 @@ class MethodExtractor extends NodeVisitorAbstract
                 // At start of range: add method call
                 elseif ($stmtLine >= $this->startLine && $stmtLine <= $this->endLine && !$replacementAdded) {
                     $replacementAdded = true;
-                    $inRange = true;
 
                     // Create method call arguments
                     $args = [];
                     foreach ($this->params as $param) {
-                        $args[] = new Node\Arg(new Variable($param->var->name));
+                        if ($param->var instanceof Variable) {
+                            $args[] = new Node\Arg(new Variable($param->var->name));
+                        }
                     }
 
                     // Create method call
@@ -599,7 +662,6 @@ class MethodExtractor extends NodeVisitorAbstract
                 }
                 // After range: keep statement
                 elseif ($stmtLine > $this->endLine) {
-                    $inRange = false;
                     $newStmts[] = $stmt;
                 }
             }

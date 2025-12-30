@@ -95,6 +95,7 @@ class ParseTool
 
     /**
      * Convert AST nodes to a readable string representation
+     * @param array<\PhpParser\Node> $nodes
      */
     private function astToString(array $nodes): string
     {
@@ -117,9 +118,9 @@ class ParseTool
         $indent = str_repeat('  ', $depth);
         $className = get_class($node);
         $shortName = substr($className, strrpos($className, '\\') + 1);
-        
+
         $result = $indent . $shortName;
-        
+
         // Add some useful properties for common node types
         if (property_exists($node, 'name')) {
             if (is_object($node->name) && method_exists($node->name, '__toString')) {
@@ -128,14 +129,14 @@ class ParseTool
                 $result .= ' (' . $node->name . ')';
             }
         }
-        
+
         // Recursively process child nodes
         $children = [];
         foreach (get_object_vars($node) as $property => $value) {
             if ($property === 'attributes') {
                 continue; // Skip internal attributes
             }
-            
+
             if (is_array($value)) {
                 foreach ($value as $child) {
                     if ($this->isPhpParserNode($child)) {
@@ -146,11 +147,11 @@ class ParseTool
                 $children[] = $this->nodeToString($value, $depth + 1);
             }
         }
-        
+
         if (!empty($children)) {
             $result .= "\n" . implode("\n", $children);
         }
-        
+
         return $result;
     }
 
