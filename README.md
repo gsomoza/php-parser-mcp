@@ -25,7 +25,57 @@ composer install
 
 ## Usage
 
-### Starting the MCP Server
+### Integrating with MCP Clients
+
+#### Claude Desktop
+
+Add this configuration to your Claude Desktop config file:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+**Linux**: `~/.config/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "php-refactor": {
+      "command": "php",
+      "args": ["/absolute/path/to/php-refactor-mcp/bin/php-refactor-mcp"]
+    }
+  }
+}
+```
+
+Replace `/absolute/path/to/php-refactor-mcp` with the actual path to where you cloned this repository.
+
+After adding the configuration, restart Claude Desktop. The PHP refactoring tools will be available in your conversations.
+
+#### PHPStorm / IntelliJ IDEA
+
+PHPStorm supports MCP through the AI Assistant plugin:
+
+1. Install the **AI Assistant** plugin from Settings → Plugins
+2. Go to Settings → Tools → AI Assistant → Model Context Protocol
+3. Click **+** to add a new MCP server
+4. Configure:
+   - **Name**: PHP Refactor MCP
+   - **Command**: `php`
+   - **Arguments**: `/absolute/path/to/php-refactor-mcp/bin/php-refactor-mcp`
+5. Click **OK** and restart PHPStorm
+
+The refactoring tools will be available through the AI Assistant.
+
+#### Other MCP Clients
+
+For other MCP-compatible clients, use the following server configuration:
+
+- **Command**: `php`
+- **Arguments**: `["/path/to/php-refactor-mcp/bin/php-refactor-mcp"]`
+- **Transport**: stdio
+
+### Starting the Server Manually
 
 The server uses stdio transport for communication:
 
@@ -55,9 +105,17 @@ Extract a block of code into a separate method.
 
 **Parameters:**
 - `file` (string): Path to the PHP file
-- `startLine` (int): Starting line number
-- `endLine` (int): Ending line number
+- `selectionRange` (string): Range in format 'startLine:startColumn-endLine:endColumn' or 'startLine-endLine'
 - `methodName` (string): Name for the new method
+
+**Example:**
+```json
+{
+  "file": "/path/to/file.php",
+  "selectionRange": "10:5-15:10",
+  "methodName": "extractedMethod"
+}
+```
 
 #### extract_variable
 
@@ -65,9 +123,35 @@ Extract an expression into a named variable.
 
 **Parameters:**
 - `file` (string): Path to the PHP file
-- `line` (int): Line number of the expression
-- `column` (int): Column number of the expression
-- `variableName` (string): Name for the new variable
+- `selectionRange` (string): Range in format 'line:column' or 'line'
+- `variableName` (string): Name for the new variable (with or without $ prefix)
+
+**Example:**
+```json
+{
+  "file": "/path/to/file.php",
+  "selectionRange": "10:15",
+  "variableName": "myVar"
+}
+```
+
+#### introduce_variable
+
+Introduce a new variable from selected expression (preferred for large PHP file refactoring).
+
+**Parameters:**
+- `file` (string): Path to the PHP file
+- `selectionRange` (string): Range in format 'startLine:startColumn-endLine:endColumn', 'line:column', or 'line'
+- `variableName` (string): Name for the new variable (with or without $ prefix)
+
+**Example:**
+```json
+{
+  "file": "/path/to/file.php",
+  "selectionRange": "10:15-10:30",
+  "variableName": "myVar"
+}
+```
 
 #### rename_variable
 
@@ -75,130 +159,23 @@ Rename a variable throughout its scope.
 
 **Parameters:**
 - `file` (string): Path to the PHP file
-- `line` (int): Line number where variable is used
-- `oldName` (string): Current variable name
-- `newName` (string): New variable name
+- `selectionRange` (string): Range in format 'line:column' or 'line' where variable is used
+- `oldName` (string): Current variable name (with or without $ prefix)
+- `newName` (string): New variable name (with or without $ prefix)
 
-## Testing
-
-Run the test suite:
-
-```bash
-composer test
+**Example:**
+```json
+{
+  "file": "/path/to/file.php",
+  "selectionRange": "10:5",
+  "oldName": "oldVar",
+  "newName": "newVar"
+}
 ```
-
-Or with PHPUnit directly:
-
-```bash
-vendor/bin/phpunit
-```
-
-Run tests with code coverage:
-
-```bash
-composer test:coverage
-```
-
-### Code Quality
-
-This project uses several code quality tools:
-
-#### PHP Parallel Lint
-
-Check PHP files for syntax errors:
-
-```bash
-composer lint
-```
-
-#### PHP-CS-Fixer
-
-Check code style compliance with PER-CS2.0:
-
-```bash
-composer cs-check
-```
-
-Automatically fix code style issues:
-
-```bash
-composer cs-fix
-```
-
-#### PHPStan
-
-Run static analysis (level 8):
-
-```bash
-composer phpstan
-```
-
-#### Mutation Testing
-
-Run mutation testing with Infection:
-
-```bash
-composer infection
-```
-
-#### Run All Checks
-
-Run all quality assurance checks at once:
-
-```bash
-composer qa
-```
-
-Configuration files:
-- `.php-cs-fixer.dist.php` - PHP-CS-Fixer configuration
-- `phpstan.neon` - PHPStan configuration
-- `phpunit.xml.dist` - PHPUnit configuration
-- `infection.json5` - Infection configuration
 
 ## Development
 
-### Project Structure
-
-```
-php-refactor-mcp/
-├── bin/
-│   └── php-refactor-mcp          # Server entry point
-├── src/
-│   ├── Server.php              # Main MCP server class
-│   └── Tools/                  # MCP tool implementations
-│       └── ParseTool.php       # Parse PHP code tool
-├── tests/
-│   └── Tools/
-│       └── ParseToolTest.php   # Tests for parse tool
-├── composer.json
-├── phpunit.xml
-└── README.md
-```
-
-### Architecture
-
-This server uses:
-- **php-mcp/server**: For MCP protocol implementation
-- **nikic/PHP-Parser**: For PHP code parsing and manipulation
-- **PHP Attributes**: For automatic tool discovery
-
-Tools are discovered automatically via PHP attributes, making it easy to add new refactoring capabilities.
-
-### GitHub Copilot Setup
-
-This repository includes a Copilot setup workflow (`.github/workflows/copilot-setup-steps.yml`) that configures the development environment for GitHub Copilot's coding agent.
-
-#### Required Repository Secret
-
-To enable Composer authentication, you need to add a `COMPOSER_TOKEN` secret to your repository:
-
-1. Go to your repository's **Settings** → **Secrets and variables** → **Actions**
-2. Click **New repository secret**
-3. Name: `COMPOSER_TOKEN`
-4. Value: Your GitHub personal access token or Composer authentication token
-5. Click **Add secret**
-
-The token will be used to authenticate Composer when installing private dependencies or accessing rate-limited package repositories.
+For information about contributing, setting up the development environment, running tests, and code quality tools, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
@@ -206,7 +183,7 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to this project.
 
 ## Author
 
