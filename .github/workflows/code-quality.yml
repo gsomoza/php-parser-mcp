@@ -30,9 +30,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-composer-
+            composer-
       
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
@@ -63,9 +63,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-composer-
+            composer-
       
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
@@ -96,9 +96,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-composer-
+            composer-
       
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
@@ -113,7 +113,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['8.1', '8.2', '8.3', '8.4']
+        php-version: ['8.1', '8.2', '8.3', '8.4', '8.5']
     
     steps:
       - name: Checkout code
@@ -134,9 +134,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php-${{ matrix.php-version }}-composer-
+            composer-
       
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
@@ -144,13 +144,12 @@ jobs:
       - name: Run PHPUnit tests
         run: ${{ matrix.php-version == '8.2' && 'composer test:coverage' || 'composer test' }}
       
-      - name: Upload coverage to Codecov
+      - name: Upload coverage report
         if: matrix.php-version == '8.2'
-        uses: codecov/codecov-action@v4
+        uses: actions/upload-artifact@v4
         with:
-          files: ./coverage/clover.xml
-          fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}
+          name: coverage-report
+          path: coverage/
 
   mutation-tests:
     name: Mutation Testing
@@ -176,9 +175,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-composer-
+            composer-
       
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
