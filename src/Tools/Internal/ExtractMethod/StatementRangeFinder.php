@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Somoza\PhpParserMcp\Tools\Internal\ExtractMethod;
+namespace Somoza\PhpRefactorMcp\Tools\Internal\ExtractMethod;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt;

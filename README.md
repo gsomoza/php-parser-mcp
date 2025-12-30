@@ -1,4 +1,4 @@
-# PHP Parser MCP
+# PHP Refactor MCP
 
 A Model Context Protocol (MCP) server that provides automated PHP refactoring tools powered by [nikic/PHP-Parser](https://github.com/nikic/PHP-Parser).
 
@@ -30,7 +30,7 @@ composer install
 The server uses stdio transport for communication:
 
 ```bash
-php bin/php-parser-mcp
+php bin/php-refactor-mcp
 ```
 
 ### Available Tools
@@ -160,9 +160,9 @@ Configuration files:
 ### Project Structure
 
 ```
-php-parser-mcp/
+php-refactor-mcp/
 ├── bin/
-│   └── php-parser-mcp          # Server entry point
+│   └── php-refactor-mcp          # Server entry point
 ├── src/
 │   ├── Server.php              # Main MCP server class
 │   └── Tools/                  # MCP tool implementations

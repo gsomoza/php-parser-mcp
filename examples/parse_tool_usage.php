@@ -11,13 +11,13 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Somoza\PhpParserMcp\Tools\ParseTool;
+use Somoza\PhpRefactorMcp\Tools\ParseTool;
 
 // Create an instance of the ParseTool
 $tool = new ParseTool();
 
 // Create temporary test files
-$tempDir = sys_get_temp_dir() . '/php-parser-mcp-examples';
+$tempDir = sys_get_temp_dir() . '/php-refactor-mcp-examples';
 if (!is_dir($tempDir)) {
     mkdir($tempDir);
 }

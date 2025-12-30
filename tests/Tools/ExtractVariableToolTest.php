@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Somoza\PhpParserMcp\Tests\Tools;
+namespace Somoza\PhpRefactorMcp\Tests\Tools;
 
 use PHPUnit\Framework\TestCase;
-use Somoza\PhpParserMcp\Tools\ExtractVariableTool;
+use Somoza\PhpRefactorMcp\Tools\ExtractVariableTool;
 
 class ExtractVariableToolTest extends TestCase
 {
@@ -15,7 +15,7 @@ class ExtractVariableToolTest extends TestCase
     protected function setUp(): void
     {
         $this->tool = new ExtractVariableTool();
-        $this->tempDir = sys_get_temp_dir() . '/php-parser-mcp-test-' . uniqid();
+        $this->tempDir = sys_get_temp_dir() . '/php-refactor-mcp-test-' . uniqid();
         mkdir($this->tempDir);
     }
 

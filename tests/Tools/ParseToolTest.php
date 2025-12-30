@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Somoza\PhpParserMcp\Tests\Tools;
+namespace Somoza\PhpRefactorMcp\Tests\Tools;
 
 use PHPUnit\Framework\TestCase;
-use Somoza\PhpParserMcp\Tools\ParseTool;
+use Somoza\PhpRefactorMcp\Tools\ParseTool;
 
 class ParseToolTest extends TestCase
 {
@@ -15,7 +15,7 @@ class ParseToolTest extends TestCase
     protected function setUp(): void
     {
         $this->tool = new ParseTool();
-        $this->tempDir = sys_get_temp_dir() . '/php-parser-mcp-test-' . uniqid();
+        $this->tempDir = sys_get_temp_dir() . '/php-refactor-mcp-test-' . uniqid();
         mkdir($this->tempDir);
     }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Somoza\PhpParserMcp\Tools\Internal\RenameVariable;
+namespace Somoza\PhpRefactorMcp\Tools\Internal\RenameVariable;
 
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;

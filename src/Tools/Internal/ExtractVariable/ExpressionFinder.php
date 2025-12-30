@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Somoza\PhpParserMcp\Tools\Internal\ExtractVariable;
+namespace Somoza\PhpRefactorMcp\Tools\Internal\ExtractVariable;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;

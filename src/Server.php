@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Somoza\PhpParserMcp;
+namespace Somoza\PhpRefactorMcp;
 
 use PhpMcp\Server\Server as McpServer;
 use PhpMcp\Server\Transports\StdioServerTransport;
@@ -15,7 +15,7 @@ class Server
     public static function create(): McpServer
     {
         $server = McpServer::make()
-            ->withServerInfo('php-parser-mcp', '0.1.0')
+            ->withServerInfo('php-refactor-mcp', '0.1.0')
             ->build();
 
         // Discover MCP tools via attributes

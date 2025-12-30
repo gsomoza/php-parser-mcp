@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Somoza\PhpParserMcp\Tools;
+namespace Somoza\PhpRefactorMcp\Tools;
 
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
 use PhpParser\NodeTraverser;
-use Somoza\PhpParserMcp\Helpers\RefactoringHelpers;
-use Somoza\PhpParserMcp\Tools\Internal\RenameVariable\ScopeFinder;
-use Somoza\PhpParserMcp\Tools\Internal\RenameVariable\VariableRenamer;
+use Somoza\PhpRefactorMcp\Helpers\RefactoringHelpers;
+use Somoza\PhpRefactorMcp\Tools\Internal\RenameVariable\ScopeFinder;
+use Somoza\PhpRefactorMcp\Tools\Internal\RenameVariable\VariableRenamer;
 
 class RenameVariableTool
 {

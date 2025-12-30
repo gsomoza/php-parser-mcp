@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Somoza\PhpParserMcp\Tools;
+namespace Somoza\PhpRefactorMcp\Tools;
 
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Somoza\PhpParserMcp\Tools;
+namespace Somoza\PhpRefactorMcp\Tools;
 
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
 use PhpParser\NodeTraverser;
-use Somoza\PhpParserMcp\Helpers\RefactoringHelpers;
-use Somoza\PhpParserMcp\Tools\Internal\ExtractVariable\ExpressionExtractor;
-use Somoza\PhpParserMcp\Tools\Internal\ExtractVariable\ExpressionFinder;
+use Somoza\PhpRefactorMcp\Helpers\RefactoringHelpers;
+use Somoza\PhpRefactorMcp\Tools\Internal\ExtractVariable\ExpressionExtractor;
+use Somoza\PhpRefactorMcp\Tools\Internal\ExtractVariable\ExpressionFinder;
 
 class ExtractVariableTool
 {

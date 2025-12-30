@@ -5,7 +5,7 @@
 The simplest way to start the MCP server is using the provided binary:
 
 ```bash
-php bin/php-parser-mcp
+php bin/php-refactor-mcp
 ```
 
 The server will listen on stdio and wait for MCP protocol messages.
@@ -19,7 +19,7 @@ You can also start the server programmatically:
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Somoza\PhpParserMcp\Server;
+use Somoza\PhpRefactorMcp\Server;
 
 // Start the MCP server with stdio transport
 Server::run();
@@ -34,7 +34,7 @@ To test the server interactively, you can use the [MCP Inspector](https://github
 npm install -g @modelcontextprotocol/inspector
 
 # Run the inspector with our server
-mcp-inspector php bin/php-parser-mcp
+mcp-inspector php bin/php-refactor-mcp
 ```
 
 ## Example MCP Protocol Messages
@@ -93,7 +93,7 @@ Add this configuration to your Claude Desktop config file:
   "mcpServers": {
     "php-parser": {
       "command": "php",
-      "args": ["/path/to/php-parser-mcp/bin/php-parser-mcp"]
+      "args": ["/path/to/php-refactor-mcp/bin/php-refactor-mcp"]
     }
   }
 }

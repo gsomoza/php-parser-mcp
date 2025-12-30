@@ -1,5 +1,5 @@
 {
-    "name": "gsomoza/php-parser-mcp",
+    "name": "gsomoza/php-refactor-mcp",
     "description": "A Model Context Protocol (MCP) server providing PHP refactoring tools powered by nikic/PHP-Parser",
     "type": "project",
     "license": "MIT",
@@ -23,16 +23,16 @@
     },
     "autoload": {
         "psr-4": {
-            "Somoza\\PhpParserMcp\\": "src/"
+            "Somoza\\PhpRefactorMcp\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Somoza\\PhpParserMcp\\Tests\\": "tests/"
+            "Somoza\\PhpRefactorMcp\\Tests\\": "tests/"
         }
     },
     "bin": [
-        "bin/php-parser-mcp"
+        "bin/php-refactor-mcp"
     ],
     "config": {
         "allow-plugins": {

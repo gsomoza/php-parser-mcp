@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Somoza\PhpParserMcp\Helpers;
+namespace Somoza\PhpRefactorMcp\Helpers;
 
 use PhpParser\Error;
 use PhpParser\ParserFactory;

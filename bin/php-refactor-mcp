@@ -24,7 +24,7 @@ if ($autoloadPath === null) {
 
 require $autoloadPath;
 
-use Somoza\PhpParserMcp\Server;
+use Somoza\PhpRefactorMcp\Server;
 
 // Start the MCP server
 Server::run();

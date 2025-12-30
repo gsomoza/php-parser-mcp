@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Somoza\PhpParserMcp\Tools;
+namespace Somoza\PhpRefactorMcp\Tools;
 
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
 use PhpParser\NodeTraverser;
-use Somoza\PhpParserMcp\Helpers\RefactoringHelpers;
-use Somoza\PhpParserMcp\Tools\Internal\ExtractMethod\MethodExtractor;
-use Somoza\PhpParserMcp\Tools\Internal\ExtractMethod\StatementRangeFinder;
-use Somoza\PhpParserMcp\Tools\Internal\ExtractMethod\VariableAnalyzer;
+use Somoza\PhpRefactorMcp\Helpers\RefactoringHelpers;
+use Somoza\PhpRefactorMcp\Tools\Internal\ExtractMethod\MethodExtractor;
+use Somoza\PhpRefactorMcp\Tools\Internal\ExtractMethod\StatementRangeFinder;
+use Somoza\PhpRefactorMcp\Tools\Internal\ExtractMethod\VariableAnalyzer;
 
 class ExtractMethodTool
 {
