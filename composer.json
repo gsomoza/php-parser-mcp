@@ -1,5 +1,5 @@
 {
-    "name": "gsomoza/php-refactor-mcp",
+    "name": "somoza/php-refactor-mcp",
     "description": "A Model Context Protocol (MCP) server providing PHP refactoring tools powered by nikic/PHP-Parser",
     "type": "project",
     "license": "MIT",
