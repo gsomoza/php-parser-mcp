@@ -54,15 +54,6 @@ jobs:
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
-
-      - name: Run PHPUnit tests
-        run: composer test
-
-      - name: Run PHPCS
-        run: composer phpcs
-
-      - name: Run PHPStan
-        run: composer phpstan
         
       - name: Verify environment
         run: |
