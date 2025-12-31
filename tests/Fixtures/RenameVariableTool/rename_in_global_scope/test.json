@@ -1,0 +1,8 @@
+{
+    "params": {
+        "line": "2",
+        "oldName": "$globalVar",
+        "newName": "$config"
+    },
+    "expectSuccess": true
+}

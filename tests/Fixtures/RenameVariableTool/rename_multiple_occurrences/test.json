@@ -1,0 +1,8 @@
+{
+    "params": {
+        "line": "3",
+        "oldName": "$sum",
+        "newName": "$total"
+    },
+    "expectSuccess": true
+}
