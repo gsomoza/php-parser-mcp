@@ -42,6 +42,109 @@ Run tests with code coverage:
 composer test:coverage
 ```
 
+### Fixture-Based Testing
+
+This project uses a fixture-based testing approach for refactoring tools, making it easy to add new test cases without writing repetitive test code.
+
+#### How It Works
+
+Tests for refactoring tools (e.g., `RenameVariableTool`, `ExtractMethodTool`) use fixtures stored in `tests/Fixtures/{ToolName}/`. Each fixture is a PHP file containing:
+1. Test parameters in comment headers
+2. The PHP code to be refactored
+
+The test framework automatically discovers all fixtures, executes the refactoring tool, and validates the output using snapshot testing.
+
+#### Adding a New Test Case
+
+To add a new test case for a refactoring tool:
+
+1. Create a new PHP file in `tests/Fixtures/{ToolName}/{test_case_name}.php`
+2. Add test parameters as comment headers
+3. Add the PHP code to be refactored
+
+**Example - Adding a rename variable test:**
+
+```php
+<?php
+// line: 6
+// oldName: $oldVar
+// newName: $newVar
+
+function test() {
+    $oldVar = 1;
+    $result = $oldVar + 2;
+    return $result;
+}
+```
+
+**Important:** Line numbers in parameters must account for the comment header lines. If your code starts at line 1 without comments, add 3 to get the actual line number (for the `<?php` line, the parameter comment lines).
+
+4. Run the tests to generate the snapshot:
+
+```bash
+UPDATE_SNAPSHOTS=true composer test
+```
+
+That's it! The test framework will:
+- Automatically discover your new fixture
+- Execute the refactoring tool with the specified parameters
+- Create a snapshot of the output
+- Compare future runs against this snapshot
+
+#### Parameter Format by Tool
+
+**RenameVariableTool:**
+```php
+// line: {line_number}
+// oldName: {old_variable_name}
+// newName: {new_variable_name}
+```
+
+**ExtractMethodTool:**
+```php
+// range: {start_line}-{end_line}
+// methodName: {extracted_method_name}
+```
+
+**IntroduceVariableTool / ExtractVariableTool:**
+```php
+// position: {line}:{column}
+// variableName: {variable_name}
+```
+
+#### Error Cases
+
+Error cases (e.g., file not found, invalid parameters) should be implemented as traditional test methods in the test class itself, not as fixtures. This allows for specific error assertions beyond just snapshot matching.
+
+Example:
+
+```php
+public function testRenameVariableFileNotFound(): void
+{
+    $result = $this->tool->rename('/nonexistent/file.php', '1', '$old', '$new');
+
+    $this->assertFalse($result['success']);
+    $this->assertArrayHasKey('error', $result);
+    $this->assertStringContainsString('File not found', $result['error']);
+}
+```
+
+#### Updating Snapshots
+
+When refactoring code changes the output format, update all snapshots:
+
+```bash
+UPDATE_SNAPSHOTS=true composer test
+```
+
+#### Benefits of Fixture-Based Testing
+
+- **Easy to add tests**: Just drop a PHP file with the test case
+- **Clear test data**: Fixtures are separate from test logic
+- **Automatic validation**: Snapshots ensure output correctness
+- **No duplication**: Test execution logic is shared across all fixtures
+- **Maintainable**: Changes to tool signatures only require updating the base test class
+
 ## Code Quality
 
 This project uses several code quality tools to maintain high standards:
