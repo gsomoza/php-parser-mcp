@@ -12,6 +12,7 @@ use Somoza\PhpRefactorMcp\Helpers\FilesystemFactory;
 use Somoza\PhpRefactorMcp\Helpers\RefactoringHelpers;
 use Somoza\PhpRefactorMcp\Tools\Internal\IntroduceVariable\ExpressionSelector;
 use Somoza\PhpRefactorMcp\Tools\Internal\IntroduceVariable\VariableIntroducer;
+use Somoza\PhpRefactorMcp\ValueObjects\SelectionRange;
 
 class IntroduceVariableTool
 {
@@ -53,7 +54,7 @@ class IntroduceVariableTool
         string $variableName
     ): array {
         // Parse the selection range
-        $range = RefactoringHelpers::parseRange($selectionRange);
+        $range = SelectionRange::tryParse($selectionRange);
         if ($range === null) {
             return [
                 'success' => false,

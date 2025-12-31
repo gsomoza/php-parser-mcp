@@ -8,54 +8,9 @@ use League\Flysystem\FilesystemOperator;
 use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
-use Somoza\PhpRefactorMcp\ValueObjects\SelectionRange;
 
 class RefactoringHelpers
 {
-    /**
-     * Parse a selection range string and return a SelectionRange value object.
-     *
-     * @return SelectionRange|null Returns SelectionRange on success, null on failure
-     */
-    public static function parseRange(string $selectionRange): ?SelectionRange
-    {
-        return SelectionRange::tryParse($selectionRange);
-    }
-
-    /**
-     * Parse a selection range string in format "startLine:startColumn-endLine:endColumn".
-     *
-     * @deprecated Use parseRange() instead which returns a SelectionRange value object
-     *
-     * @param string $selectionRange Range string
-     * @param int $startLine Output parameter for start line
-     * @param int $startColumn Output parameter for start column
-     * @param int $endLine Output parameter for end line
-     * @param int $endColumn Output parameter for end column
-     *
-     * @return bool True if parsing succeeded
-     */
-    public static function tryParseRange(
-        string $selectionRange,
-        ?int &$startLine,
-        ?int &$startColumn,
-        ?int &$endLine,
-        ?int &$endColumn
-    ): bool {
-        $range = self::parseRange($selectionRange);
-
-        if ($range === null) {
-            return false;
-        }
-
-        $startLine = $range->startLine;
-        $startColumn = $range->startColumn;
-        $endLine = $range->endLine;
-        $endColumn = $range->endColumn;
-
-        return true;
-    }
-
     /**
      * Apply a refactoring to a file.
      *

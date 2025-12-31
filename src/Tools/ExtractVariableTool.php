@@ -12,6 +12,7 @@ use Somoza\PhpRefactorMcp\Helpers\FilesystemFactory;
 use Somoza\PhpRefactorMcp\Helpers\RefactoringHelpers;
 use Somoza\PhpRefactorMcp\Tools\Internal\ExtractVariable\ExpressionExtractor;
 use Somoza\PhpRefactorMcp\Tools\Internal\ExtractVariable\ExpressionFinder;
+use Somoza\PhpRefactorMcp\ValueObjects\SelectionRange;
 
 class ExtractVariableTool
 {
@@ -53,7 +54,7 @@ class ExtractVariableTool
         string $variableName
     ): array {
         // Parse the selection range (line and optional column)
-        $range = RefactoringHelpers::parseRange($selectionRange);
+        $range = SelectionRange::tryParse($selectionRange);
         if ($range === null) {
             return [
                 'success' => false,

@@ -12,6 +12,7 @@ use Somoza\PhpRefactorMcp\Helpers\FilesystemFactory;
 use Somoza\PhpRefactorMcp\Helpers\RefactoringHelpers;
 use Somoza\PhpRefactorMcp\Tools\Internal\RenameVariable\ScopeFinder;
 use Somoza\PhpRefactorMcp\Tools\Internal\RenameVariable\VariableRenamer;
+use Somoza\PhpRefactorMcp\ValueObjects\SelectionRange;
 
 class RenameVariableTool
 {
@@ -59,7 +60,7 @@ class RenameVariableTool
         string $newName
     ): array {
         // Parse the selection range
-        $range = RefactoringHelpers::parseRange($selectionRange);
+        $range = SelectionRange::tryParse($selectionRange);
         if ($range === null) {
             return [
                 'success' => false,

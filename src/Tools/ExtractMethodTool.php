@@ -13,6 +13,7 @@ use Somoza\PhpRefactorMcp\Helpers\RefactoringHelpers;
 use Somoza\PhpRefactorMcp\Tools\Internal\ExtractMethod\MethodExtractor;
 use Somoza\PhpRefactorMcp\Tools\Internal\ExtractMethod\StatementRangeFinder;
 use Somoza\PhpRefactorMcp\Tools\Internal\ExtractMethod\VariableAnalyzer;
+use Somoza\PhpRefactorMcp\ValueObjects\SelectionRange;
 
 class ExtractMethodTool
 {
@@ -53,7 +54,7 @@ class ExtractMethodTool
         string $methodName
     ): array {
         // Parse the selection range
-        $range = RefactoringHelpers::parseRange($selectionRange);
+        $range = SelectionRange::tryParse($selectionRange);
         if ($range === null) {
             return [
                 'success' => false,
