@@ -17,29 +17,6 @@ class ExtractMethodToolTest extends FixtureBasedTestCase
         $this->tool = new ExtractMethodTool($this->filesystem);
     }
 
-    protected function getToolName(): string
-    {
-        return 'ExtractMethodTool';
-    }
-
-    /**
-     * @param array<string, mixed> $params
-     *
-     * @return array<string, mixed>
-     */
-    protected function executeTool(string $fixtureName, string $code, array $params): array
-    {
-        // Create a virtual file with the fixture code
-        $file = $this->createFile('/test.php', $code);
-
-        // Execute the tool with parameters from the fixture
-        return $this->tool->extract(
-            $file,
-            $params['range'] ?? '1-1',
-            $params['methodName'] ?? 'extractedMethod'
-        );
-    }
-
     // Error cases - traditional test methods
 
     public function testExtractMethodFileNotFound(): void

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Somoza\PhpRefactorMcp\Tests\Support;
 
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
+
 /**
  * Base test case for fixture-based testing.
  *
@@ -20,12 +23,27 @@ abstract class FixtureBasedTestCase extends FilesystemTestCase
 {
     /**
      * Get the name of the tool being tested.
-     * This should match the directory name in tests/Fixtures/.
+     * Automatically derives from class name (e.g., RenameVariableToolTest -> RenameVariableTool).
+     * Override this method if you need custom tool name derivation.
      */
-    abstract protected function getToolName(): string;
+    protected function getToolName(): string
+    {
+        $className = static::class;
+        $shortName = (new \ReflectionClass($className))->getShortName();
+
+        // Remove 'Test' suffix if present (e.g., RenameVariableToolTest -> RenameVariableTool)
+        if (str_ends_with($shortName, 'Test')) {
+            return substr($shortName, 0, -4);
+        }
+
+        return $shortName;
+    }
 
     /**
      * Execute the tool with the given fixture data.
+     *
+     * Default implementation that automatically discovers and calls the tool's MCP method.
+     * Override this method if you need custom execution logic.
      *
      * @param string $fixtureName The name of the fixture (without .php extension)
      * @param string $code The PHP code from the fixture file
@@ -33,7 +51,123 @@ abstract class FixtureBasedTestCase extends FilesystemTestCase
      *
      * @return array<string, mixed>
      */
-    abstract protected function executeTool(string $fixtureName, string $code, array $params): array;
+    protected function executeTool(string $fixtureName, string $code, array $params): array
+    {
+        // Create a virtual file with the fixture code
+        $file = $this->createFile('/test.php', $code);
+
+        // Get the tool instance from the test class
+        $tool = $this->getToolInstance();
+
+        // Find the method with McpTool attribute
+        $method = $this->findToolMethod($tool);
+
+        // Get method parameters and map fixture params to method arguments
+        $args = $this->mapParamsToMethodArguments($method, $file, $params);
+
+        // Call the tool method
+        return $method->invokeArgs($tool, $args);
+    }
+
+    /**
+     * Get the tool instance being tested.
+     * Default implementation looks for a property named 'tool'.
+     * Override if your tool instance is stored differently.
+     */
+    protected function getToolInstance(): object
+    {
+        $reflection = new \ReflectionClass($this);
+
+        // Try to find a property named 'tool'
+        if ($reflection->hasProperty('tool')) {
+            $property = $reflection->getProperty('tool');
+            $property->setAccessible(true);
+            return $property->getValue($this);
+        }
+
+        throw new \RuntimeException('Could not find tool instance. Override getToolInstance() or ensure you have a $tool property.');
+    }
+
+    /**
+     * Find the method with McpTool attribute.
+     */
+    protected function findToolMethod(object $tool): \ReflectionMethod
+    {
+        $reflection = new \ReflectionClass($tool);
+
+        foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+            $attributes = $method->getAttributes(\PhpMcp\Server\Attributes\McpTool::class);
+            if (!empty($attributes)) {
+                return $method;
+            }
+        }
+
+        throw new \RuntimeException('Could not find method with McpTool attribute in ' . get_class($tool));
+    }
+
+    /**
+     * Map fixture parameters to method arguments.
+     *
+     * @param array<string, mixed> $params
+     *
+     * @return array<int, mixed>
+     */
+    protected function mapParamsToMethodArguments(\ReflectionMethod $method, string $file, array $params): array
+    {
+        $args = [];
+        $parameters = $method->getParameters();
+
+        foreach ($parameters as $index => $parameter) {
+            $paramName = $parameter->getName();
+
+            // First parameter is always the file path
+            if ($index === 0 && $paramName === 'file') {
+                $args[] = $file;
+                continue;
+            }
+
+            // Map fixture params to method params by name
+            // Common parameter names and their fixture equivalents
+            $parameterMap = [
+                'selectionRange' => ['line', 'range', 'position', 'selectionRange'],
+                'oldName' => ['oldName'],
+                'newName' => ['newName'],
+                'methodName' => ['methodName'],
+                'variableName' => ['variableName'],
+            ];
+
+            $value = null;
+
+            // Try to find matching parameter in fixture
+            if (isset($parameterMap[$paramName])) {
+                foreach ($parameterMap[$paramName] as $fixtureKey) {
+                    if (isset($params[$fixtureKey])) {
+                        $value = $params[$fixtureKey];
+                        break;
+                    }
+                }
+            } elseif (isset($params[$paramName])) {
+                $value = $params[$paramName];
+            }
+
+            // Use default value if available and no value found
+            if ($value === null && $parameter->isDefaultValueAvailable()) {
+                $value = $parameter->getDefaultValue();
+            }
+
+            // If still no value, use empty string for required string parameters
+            if ($value === null) {
+                $type = $parameter->getType();
+                if ($type instanceof \ReflectionNamedType && $type->getName() === 'string') {
+                    $value = '';
+                }
+            }
+
+            $args[] = $value;
+        }
+
+        return $args;
+    }
 
     /**
      * Data provider that discovers and yields all fixtures for this tool.
@@ -45,37 +179,38 @@ abstract class FixtureBasedTestCase extends FilesystemTestCase
         $toolName = static::getToolNameStatic();
         $fixturesDir = __DIR__ . '/../Fixtures/' . $toolName;
 
-        if (!is_dir($fixturesDir)) {
+        // Create a Flysystem instance for reading fixtures from the real filesystem
+        $adapter = new LocalFilesystemAdapter($fixturesDir);
+        $filesystem = new Filesystem($adapter);
+
+        // Check if directory exists
+        try {
+            $listing = $filesystem->listContents('/', false);
+        } catch (\Exception $e) {
+            // Directory doesn't exist, no fixtures
             return;
         }
 
         // Find all .php files in the fixtures directory
-        foreach (new \DirectoryIterator($fixturesDir) as $file) {
-            if ($file->isDot() || !$file->isFile()) {
-                continue;
+        foreach ($listing as $item) {
+            if ($item->isFile() && str_ends_with($item->path(), '.php')) {
+                $fixtureName = basename($item->path(), '.php');
+
+                try {
+                    $fixtureContent = $filesystem->read($item->path());
+                } catch (\Exception $e) {
+                    continue;
+                }
+
+                // Parse parameters from comments
+                $params = self::parseFixtureParams($fixtureContent);
+
+                yield $fixtureName => [
+                    'fixtureName' => $fixtureName,
+                    'code' => $fixtureContent,
+                    'params' => $params,
+                ];
             }
-
-            // Only process .php files
-            if ($file->getExtension() !== 'php') {
-                continue;
-            }
-
-            $fixtureName = $file->getBasename('.php');
-            $fixturePath = $file->getPathname();
-            $fixtureContent = file_get_contents($fixturePath);
-
-            if ($fixtureContent === false) {
-                continue;
-            }
-
-            // Parse parameters from comments
-            $params = self::parseFixtureParams($fixtureContent);
-
-            yield $fixtureName => [
-                'fixtureName' => $fixtureName,
-                'code' => $fixtureContent,
-                'params' => $params,
-            ];
         }
     }
 

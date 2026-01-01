@@ -17,30 +17,6 @@ class RenameVariableToolTest extends FixtureBasedTestCase
         $this->tool = new RenameVariableTool($this->filesystem);
     }
 
-    protected function getToolName(): string
-    {
-        return 'RenameVariableTool';
-    }
-
-    /**
-     * @param array<string, mixed> $params
-     *
-     * @return array<string, mixed>
-     */
-    protected function executeTool(string $fixtureName, string $code, array $params): array
-    {
-        // Create a virtual file with the fixture code
-        $file = $this->createFile('/test.php', $code);
-
-        // Execute the tool with parameters from the fixture
-        return $this->tool->rename(
-            $file,
-            $params['line'] ?? '1',
-            $params['oldName'] ?? '',
-            $params['newName'] ?? ''
-        );
-    }
-
     // Error cases - traditional test methods
 
     public function testRenameVariableFileNotFound(): void
