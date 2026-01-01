@@ -5,13 +5,13 @@ class Calculator
     public function calculate()
     {
         $x = 10;
-        $y = 20;
-        $result = $this->add($x, $y);
+        $y = $this->add();
+        $result = $x + $y;
         echo $result;
     }
-    private function add($x, $y)
+    private function add()
     {
-        $result = $x + $y;
-        return $result;
+        $y = 20;
+        return $y;
     }
 }

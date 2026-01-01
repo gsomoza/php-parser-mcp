@@ -5,13 +5,13 @@ class Calculator
     public function calculate()
     {
         $a = 1;
-        $b = 2;
-        $sum = $this->calculateSum($a, $b);
-        return $sum;
-    }
-    private function calculateSum($a, $b)
-    {
+        $b = $this->calculateSum();
         $sum = $a + $b;
         return $sum;
+    }
+    private function calculateSum()
+    {
+        $b = 2;
+        return $b;
     }
 }
